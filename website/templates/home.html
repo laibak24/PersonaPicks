@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Home - MBTI-Based Recommendations
+{% endblock %}
+
+{% block content %}
+    <section class="about-section text-center my-5">
+        <h2>About This Website</h2>
+        <p class="lead">We recommend movies, books, and songs based on your personality type! Sign up or log in to explore personalized content tailored to your MBTI.</p>
+    </section>
+
+    <div class="text-center mb-4">
+        <a href="#" class="btn btn-custom">Sign Up</a>
+        <!-- Link the login button to the login page -->
+        <a href="{% url 'login' %}" class="btn btn-custom">Log In</a>
+
+    </div>
+
+    <div class="external-link text-center">
+        <p>Don't know your MBTI type? <a href="https://www.16personalities.com/free-personality-test" target="_blank">Take the test here</a>.</p>
+    </div>
+{% endblock %}
