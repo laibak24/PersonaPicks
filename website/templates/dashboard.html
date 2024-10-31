@@ -6,6 +6,8 @@
     <h1>Welcome, {{ username }}!</h1>
     <h2>Your MBTI Type: {{ mbti_type }}</h2>
     
+    <img src="{{ avatar_path }}" alt="{{ mbti_type }} Avatar" class="mbti-avatar" style="width: 100px; height: 100px;"/>
+
     <h3>Your Watchlist</h3>
     <ul class="list-group mb-4">
         {% for movie in watchlist %}

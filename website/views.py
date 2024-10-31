@@ -46,11 +46,19 @@ def logout_user(request):
     return redirect('login')
 
 # Dashboard View
+from django.conf import settings
+import os
+
+# Dashboard View
 @login_required
 def dashboard(request):
     user = request.user
     username = user.username
     mbti_type = user.mbti_type.mbti_type if user.mbti_type else 'Not set'
+
+    # Construct the path for the avatar
+    avatar_filename = f"{mbti_type}.jpg"  # Assuming the files are named as MBTI type (e.g., 'INFP.jpeg')
+    avatar_path = os.path.join(settings.STATIC_URL, 'avatars', avatar_filename)
 
     # Get the user's watchlist and readlist
     watchlist = Watchlist.objects.filter(watchlist_user=user).first().movies.all() if Watchlist.objects.filter(watchlist_user=user).exists() else []
@@ -61,6 +69,7 @@ def dashboard(request):
         'mbti_type': mbti_type,
         'watchlist': watchlist,
         'readlist': readlist,
+        'avatar_path': avatar_path,  # Add avatar path to context
     }
 
     return render(request, 'dashboard.html', context)
