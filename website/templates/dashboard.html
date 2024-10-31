@@ -3,61 +3,24 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h4>{{ user.user_name }}</h4>
-                    <p class="text-muted">{{ user.mbti_type.mbti_type }}</p>
-                    
-                    <!-- Avatar based on MBTI Type -->
-                    <img src="{% static 'avatars/'|add:user.mbti_type.mbti_type|add:'.png' %}" alt="{{ user.mbti_type.mbti_type }} Avatar" class="rounded-circle" width="150" height="150">
-                    
-                    <p class="mt-3">Welcome, {{ user.user_name }}!</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-8">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h5>Watchlist</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if user.watchlist.movies.all %}
-                                <ul class="list-group">
-                                    {% for movie in user.watchlist.movies.all %}
-                                        <li class="list-group-item">{{ movie.title }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>No movies in your watchlist yet.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5>Readlist</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if user.readlist.books.all %}
-                                <ul class="list-group">
-                                    {% for book in user.readlist.books.all %}
-                                        <li class="list-group-item">{{ book.title }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>No books in your readlist yet.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <h1>Welcome, {{ username }}!</h1>
+    <h2>Your MBTI Type: {{ mbti_type }}</h2>
+    
+    <h3>Your Watchlist</h3>
+    <ul class="list-group mb-4">
+        {% for movie in watchlist %}
+            <li class="list-group-item">{{ movie.title }}</li>
+        {% empty %}
+            <li class="list-group-item">No movies in your watchlist.</li>
+        {% endfor %}
+    </ul>
+    
+    <h3>Your Readlist</h3>
+    <ul class="list-group">
+        {% for book in readlist %}
+            <li class="list-group-item">{{ book.title }}</li>
+        {% empty %}
+            <li class="list-group-item">No books in your readlist.</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

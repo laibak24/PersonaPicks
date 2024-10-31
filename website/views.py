@@ -1,58 +1,66 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib import messages
-from .forms import SignUpForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
+from .forms import UserRegistrationForm, UserLoginForm
 from .models import Watchlist, Readlist
 
 def home(request):
-    return render(request, 'home.html')  # Ensure 'home.html' exists in the templates
+    return render(request, 'home.html')
 
-def login_user(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')  # Use 'get' for safety
-        password = request.POST.get('password')
-        
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, "Successfully logged in!")
-            return redirect('home')
-        else:
-            messages.error(request, "Error logging in. Please check your credentials.")
-            return redirect('login')  # Ensure 'login' URL is set correctly
-
-    return render(request, 'login.html')  # Ensure 'login.html' exists in the templates
-
-def logout_user(request):
-    logout(request)
-    messages.success(request, 'You have been logged out.')  # Correct message usage
-    return redirect('home')
-
-
-
+# User Registration View
 def register(request):
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Registration successful!')
-            return redirect('home')
-        else:
-            messages.error(request, 'There was an error with your registration.')
+            return redirect('dashboard')
     else:
-        form = SignUpForm()
-
+        form = UserRegistrationForm()
     return render(request, 'register.html', {'form': form})
 
 
+
+def login_user(request):
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('username')  # This retrieves the email
+            password = request.POST.get('password')  # Get the password directly from POST data
+            
+            # Use the username parameter instead of email in authenticate
+            user = authenticate(request, username=email, password=password)  # Change here
+            if user is not None:
+                login(request, user)
+                return redirect('dashboard')
+            else:
+                form.add_error(None, "Invalid email or password.")
+    else:
+        form = UserLoginForm()
+    
+    return render(request, 'login.html', {'form': form})
+
+# User Logout View
+def logout_user(request):
+    logout(request)
+    return redirect('login')
+
+# Dashboard View
+@login_required
 def dashboard(request):
-    watchlist = Watchlist.objects.filter(user=request.user).first()
-    readlist = Readlist.objects.filter(user=request.user).first()
+    user = request.user
+    username = user.username
+    mbti_type = user.mbti_type.mbti_type if user.mbti_type else 'Not set'
+
+    # Get the user's watchlist and readlist
+    watchlist = Watchlist.objects.filter(watchlist_user=user).first().movies.all() if Watchlist.objects.filter(watchlist_user=user).exists() else []
+    readlist = Readlist.objects.filter(readlist_user=user).first().books.all() if Readlist.objects.filter(readlist_user=user).exists() else []
 
     context = {
-        'user': request.user,
+        'username': username,
+        'mbti_type': mbti_type,
         'watchlist': watchlist,
-        'readlist': readlist
+        'readlist': readlist,
     }
+
     return render(request, 'dashboard.html', context)
