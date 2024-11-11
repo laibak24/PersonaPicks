@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">MBTI Recs</a>
+    <a class="navbar-brand" href="{% url 'dashboard' %}">MBTI Recs</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -9,10 +9,10 @@
                 <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link">Movies</a>
+                <a class="nav-link" href="{% url 'movies' %}">Movies</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link">Songs</a>
+                <a class="nav-link" href="{% url 'songs' %}">Songs</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link">Books</a>
@@ -26,7 +26,7 @@
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                     {% if user.is_authenticated %}
                         <a class="dropdown-item" href="{% url 'dashboard' %}">Profile</a>
-                        <a class="dropdown-item" >Change Password</a>
+                        <a class="dropdown-item">Change Password</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
                     {% else %}

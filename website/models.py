@@ -26,7 +26,6 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-
 # Movie Model
 class Movie(models.Model):
     movie_id = models.AutoField(primary_key=True)
@@ -34,6 +33,11 @@ class Movie(models.Model):
     description = models.TextField(blank=True)
     release_date = models.DateField(null=True, blank=True)
     image = models.ImageField(upload_to='media/movie_images/', default='default_movie.jpg')
+
+    # Adding MBTI preferences
+    first_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_movies_first')
+    second_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_movies_second')
+    third_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_movies_third')
 
     def __str__(self):
         return self.title
@@ -47,6 +51,11 @@ class Book(models.Model):
     publication_year = models.DateField(null=True, blank=True)
     image = models.ImageField(upload_to='book_images/', default='default_book.jpg')
 
+    # Adding MBTI preferences
+    first_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_books_first')
+    second_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_books_second')
+    third_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_books_third')
+
     def __str__(self):
         return self.title
 
@@ -58,6 +67,11 @@ class Song(models.Model):
     album = models.CharField(max_length=255, blank=True)
     release_date = models.DateField(null=True, blank=True)
     image = models.ImageField(upload_to='song_images/', default='default_song.jpg')
+
+    # Adding MBTI preferences
+    first_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_songs_first')
+    second_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_songs_second')
+    third_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_songs_third')
 
     def __str__(self):
         return self.title

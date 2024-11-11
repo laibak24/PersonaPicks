@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegistrationForm, UserLoginForm
-from .models import Watchlist, Readlist
+from .models import Watchlist, Readlist,Movie
 
 def home(request):
     return render(request, 'home.html')
@@ -73,3 +73,28 @@ def dashboard(request):
     }
 
     return render(request, 'dashboard.html', context)
+
+
+def movies_view(request):
+    # Fetch all movies along with MBTI preferences
+    movies = Movie.objects.all().order_by('title')  # Order alphabetically by title or customize ordering as needed
+    
+    # Pass movies to the template
+    context = {
+        'movies': movies,
+    }
+    return render(request, 'movies.html', context)
+
+from django.shortcuts import render
+from .models import Song
+
+# Songs View
+def songs_view(request):
+    # Fetch all songs along with their MBTI preferences
+    songs = Song.objects.all().order_by('title')  # Order alphabetically by song title
+
+    # Pass songs to the template
+    context = {
+        'songs': songs,
+    }
+    return render(request, 'songs.html', context)
