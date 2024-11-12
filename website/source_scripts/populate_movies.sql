@@ -27,4 +27,9 @@ INSERT INTO website_movie (title, description, release_date, image, first_prefer
     ('Interstellar', 'A space exploration mission to save humanity.', '2014-11-07', 'movie_images/interstellar.jpg', 5, 1, 4),
     ('The Godfather', 'A powerful tale of family and crime in America.', '1972-03-24', 'movie_images/the_godfather.jpg', 9, 11, 3),
     ('Pulp Fiction', 'An intertwining story of crime and redemption.', '1994-10-14', 'movie_images/pulp_fiction.jpg', 8, 15, 13),
-    ('Titanic', 'A romantic and tragic tale set aboard the Titanic.', '1997-12-19', 'movie_images/titanic.jpg', 7, 16, 10);
+    ('Spirited Away', 'A sullen 10-year-old girl wanders into a world ruled by gods, witches and spirits.', '2003-03-28', 'movie_images/spirited_away.jpg', 6, 8, 14);
+    ('Parasite', 'Greed and class discrimination threaten the relationship between the wealthy Park family and the destitute Kim clan.', '2019-11-08', 'movie_images/parasite.jpg', 1, 5, 3);
+    ('Whiplash', 'A promising young drummer and his struggles. ', '2014-10-15', 'movie_images/whiplash.jpg', 4, 7, 12);
+    ('The Prestige', 'Rival 19th-century magicians engage in a bitter battle for trade secrets.', '2006-10-20', 'movie_images/the_prestige.jpg', 15, 11, 3);
+    ('Casablanca', 'A cafe owner struggles to help his former lover escape the Nazis.', '1943-01-23', 'movie_images/casablanca.jpg', 5, 14, 9);
+    ('WALL·E', 'A robot meets another robot and falls in love with her.', '2008-06-27', 'movie_images/wall_e.jpg', 5, 11, 15);
