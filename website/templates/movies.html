@@ -3,32 +3,48 @@
 {% block title %}Movie Recommendations{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="mb-4 text-center">Movie Recommendations</h1>
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Movie Recommendations</h1>
 
-        <div class="row">
-            {% for movie in movies %}
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm border-light">
-                    <img src="{% if movie.image %}{{ movie.image.url }}{% else %}{% static 'default_movie.jpg' %}{% endif %}" 
-                         alt="{{ movie.title }}" class="card-img-top" style="height: 250px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ movie.title }}</h5>
-                        <p class="card-text">{{ movie.description }}</p>
-                        <p class="card-text"><small class="text-muted">Release Date: {{ movie.release_date|date:"F d, Y" }}</small></p>
-                        <div class="mt-3">
-                            <button class="btn" style="background-color: #28a745; color: white;">{{ movie.first_preference }}</button>
-                            <button class="btn" style="background-color: #ffc107; color: white;">{{ movie.second_preference }}</button>
-                            <button class="btn" style="background-color: #dc3545; color: white;">{{ movie.third_preference }}</button>
-                        </div>
+    <!-- Success Message -->
+    {% if message %}
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% for movie in movies %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-light">
+                <img src="{% if movie.image %}{{ movie.image.url }}{% else %}{% static 'default_movie.jpg' %}{% endif %}" 
+                     alt="{{ movie.title }}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text">{{ movie.description }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">Release Date: {{ movie.release_date|date:"F d, Y" }}</small>
+                    </p>
+
+                    <!-- Add to Watchlist Form -->
+                    <form action="{% url 'add_to_watchlist' movie.movie_id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Add to Watchlist</button>
+                    </form>
+
+                    <div class="mt-3">
+                        <button class="btn" style="background-color: #28a745; color: white;">{{ movie.first_preference }}</button>
+                        <button class="btn" style="background-color: #ffc107; color: white;">{{ movie.second_preference }}</button>
+                        <button class="btn" style="background-color: #dc3545; color: white;">{{ movie.third_preference }}</button>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12">
-                <p>No movies found.</p>
-            </div>
-            {% endfor %}
         </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No movies found.</p>
+        </div>
+        {% endfor %}
     </div>
+</div>
 {% endblock %}
