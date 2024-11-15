@@ -13,23 +13,6 @@ from django.contrib import messages  # Import for messages
 def home(request):
     return render(request, 'home.html')
 
-
-
-
-@login_required
-@require_POST
-def remove_from_watchlist(request, movie_id):
-    movie = get_object_or_404(Movie, pk=movie_id)
-    watchlist = Watchlist.objects.filter(watchlist_user=request.user).first()
-
-    if watchlist and movie in watchlist.movies.all():
-        watchlist.movies.remove(movie)
-        messages.success(request, f"'{movie.title}' has been removed from your watchlist.")
-    else:
-        messages.warning(request, f"'{movie.title}' is not in your watchlist.")
-
-    return redirect('dashboard')
-
 # User Registration View
 def register(request):
     if request.method == 'POST':
@@ -146,3 +129,49 @@ def add_to_watchlist(request, movie_id):
     # Fetch all movies again and pass the message back to the template
     movies = Movie.objects.all().order_by('title')
     return render(request, 'movies.html', {'movies': movies, 'message': message})
+
+@login_required
+@require_POST
+def add_to_readlist(request, book_id):
+    book = get_object_or_404(Book, pk=book_id)
+    readlist, created = Readlist.objects.get_or_create(readlist_user=request.user)
+
+    if book not in readlist.books.all():
+        readlist.books.add(book)
+        message = f"'{book.title}' has been added to your readlist."
+
+    else:
+        message = f"'{book.title}' is already in your watchlist."
+
+    # Fetch all movies again and pass the message back to the template
+    books = Book.objects.all().order_by('title')
+    return render(request, 'books.html', {'books': books, 'message': message})
+
+
+@login_required
+@require_POST
+def remove_from_watchlist(request, movie_id):
+    movie = get_object_or_404(Movie, pk=movie_id)
+    watchlist = Watchlist.objects.filter(watchlist_user=request.user).first()
+
+    if watchlist and movie in watchlist.movies.all():
+        watchlist.movies.remove(movie)
+        messages.success(request, f"'{movie.title}' has been removed from your watchlist.")
+    else:
+        messages.warning(request, f"'{movie.title}' is not in your watchlist.")
+
+    return redirect('dashboard')
+
+@login_required
+@require_POST
+def remove_from_readlist(request, book_id):
+    book = get_object_or_404(Book, pk=book_id)
+    readlist = Readlist.objects.filter(readlist_user=request.user).first()
+
+    if readlist and book in readlist.books.all():
+        readlist.books.remove(book)
+        messages.success(request, f"'{book.title}' has been removed from your readlist.")
+    else:
+        messages.warning(request, f"'{book.title}' is not in your readlist.")
+
+    return redirect('dashboard')

@@ -24,6 +24,21 @@
         {% endfor %}
     </ul>
     
+    <h3>Your Readlist</h3>
+    <ul class="list-group">
+        {% for book in readlist %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ book.title }}
+                <form action="{% url 'remove_from_readlist' book.book_id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+            </li>
+        {% empty %}
+            <li class="list-group-item">No books in your readlist.</li>
+        {% endfor %}
+    </ul>
+
     {% if messages %}
     <div class="alert-messages">
         {% for message in messages %}
@@ -33,14 +48,4 @@
         {% endfor %}
     </div>
     {% endif %}
-    
-    
-    <h3>Your Readlist</h3>
-    <ul class="list-group">
-        {% for book in readlist %}
-            <li class="list-group-item">{{ book.title }}</li>
-        {% empty %}
-            <li class="list-group-item">No books in your readlist.</li>
-        {% endfor %}
-    </ul>
 {% endblock %}

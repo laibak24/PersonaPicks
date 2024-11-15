@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book Recommendations{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Book Recommendations</h1>
+
+    <!-- Success Message -->
+    {% if message %}
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% for book in books %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-light">
+                <img src="{% if book.image %}{{ book.image.url }}{% else %}{% static 'default_book.jpg' %}{% endif %}" 
+                     alt="{{ book.title }}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">{{ book.description }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">Published: {{ book.publication_year|date:"F d, Y" }}</small>
+                    </p>
+
+                    <!-- Check if the book is already in the readlist -->
+                    {% if request.user.is_authenticated %}
+                        {% with readlist=request.user.readlist %}
+                            {% if readlist and book in readlist.books.all %}
+                                <!-- Remove from Readlist Form -->
+                                <form action="{% url 'remove_from_readlist' book.book_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Remove from Readlist</button>
+                                </form>
+                            {% else %}
+                                <!-- Add to Readlist Form -->
+                                <form action="{% url 'add_to_readlist' book.book_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Add to Readlist</button>
+                                </form>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <button class="btn" style="background-color: #28a745; color: white;">{{ book.first_preference }}</button>
+                        <button class="btn" style="background-color: #ffc107; color: white;">{{ book.second_preference }}</button>
+                        <button class="btn" style="background-color: #dc3545; color: white;">{{ book.third_preference }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No books found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
