@@ -8,7 +8,6 @@
     
     <img src="{{ avatar_path }}" alt="{{ mbti_type }} Avatar" class="mbti-avatar" style="width: 100px; height: 100px;"/>
 
-    
     <h3>Your Watchlist</h3>
     <ul class="list-group mb-4">
         {% for movie in watchlist %}
@@ -39,8 +38,19 @@
         {% endfor %}
     </ul>
 
+    <!-- Feedback Section -->
+    <h3>Give Feedback</h3>
+    <form action="{% url 'submit_feedback' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="feedback_message"></label>
+            <textarea id="feedback_message" name="message" class="form-control" rows="4" placeholder="Enter your feedback here"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+
     {% if messages %}
-    <div class="alert-messages">
+    <div class="alert-messages mt-4">
         {% for message in messages %}
         <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
             {{ message }}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Top Picks{% endblock %}
+
+{% block content %}
+    <h1>Top Picks</h1>
+
+    <!-- Displaying Testimonials at the Top -->
+    <div class="testimonials">
+        <h3>User Testimonials</h3>
+        {% if feedbacks %}
+            <div class="testimonials-list">
+                {% for feedback in feedbacks %}
+                    <div class="testimonial mb-4 p-4 border rounded">
+                        <h5>{{ feedback.feedback_giver.username }}</h5>
+                        <p>{{ feedback.message }}</p>
+                        <small class="text-muted">Posted on: {{ feedback.created_at|date:"F j, Y" }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No testimonials yet. Be the first to leave feedback!</p>
+        {% endif %}
+    </div>
+
+    <!-- Your Top Picks Section (Movies, Books, etc.) -->
+    <div class="top-picks mt-5">
+        <h3>Top Movies</h3>
+        <!-- Example for displaying top movie picks -->
+        <ul class="list-group mb-4">
+                <li class="list-group-item">No top movies to display.</li>
+        </ul>
+
+        <h3>Top Books</h3>
+        <!-- Example for displaying top book picks -->
+        <ul class="list-group">
+                <li class="list-group-item">No top books to display.</li>
+        </ul>
+
+        <h3>Top Songs</h3>
+        <!-- Example for displaying top song picks -->
+        <ul class="list-group mt-4">
+                <li class="list-group-item">No top songs to display.</li>
+        </ul>
+    </div>
+
+{% endblock %}

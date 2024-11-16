@@ -26,7 +26,6 @@ def register(request):
     return render(request, 'register.html', {'form': form})
 
 
-
 def login_user(request):
     if request.method == 'POST':
         form = UserLoginForm(data=request.POST)
@@ -175,3 +174,39 @@ def remove_from_readlist(request, book_id):
         messages.warning(request, f"'{book.title}' is not in your readlist.")
 
     return redirect('dashboard')
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Feedback
+from .forms import FeedbackForm
+
+# View to give feedback
+@login_required
+def give_feedback(request):
+    if request.method == "POST":
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.feedback_giver = request.user  # Set the user as the feedback giver
+            feedback.save()
+            return redirect('all_feedbacks')  # Redirect to feedback display page after saving
+    else:
+        form = FeedbackForm()
+    return render(request, 'feedback/give_feedback.html', {'form': form})
+
+def submit_feedback(request):
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        if message:
+            feedback = Feedback(feedback_giver=request.user, message=message)
+            feedback.save()
+            messages.success(request, 'Thank you for your feedback!')
+        else:
+            messages.error(request, 'Please enter some feedback.')
+    return redirect('dashboard')  # Redirect back to the dashboard
+
+def top_picks(request):
+    # Fetch all feedbacks
+    feedbacks = Feedback.objects.all().order_by('-created_at')  # You can order by the creation date if needed
+    return render(request, 'top_picks.html', {'feedbacks': feedbacks})
+
