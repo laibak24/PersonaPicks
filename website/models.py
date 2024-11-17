@@ -19,8 +19,8 @@ class MBTIType(models.Model):
 # Custom User Model
 class User(AbstractUser):
     user_id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=150, unique=True, default="default_username")
-    email = models.EmailField(unique=True, default="default@example.com")
+    username = models.CharField(max_length=150, unique=True, default="Enter username")
+    email = models.EmailField(unique=True, default="Enter email")
     mbti_type = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True)
     avatar = models.ImageField(upload_to='avatars/', default="avatar.svg", null=True)
 
@@ -98,11 +98,18 @@ class Recommendation(models.Model):
     def __str__(self):
         return f"Recommendation for {self.recommendation_for_user}"
 
+STATUS_CHOICES = [
+    ('not_started', 'Not Started'),
+    ('in_progress', 'In Progress'),
+    ('completed', 'Completed'),
+]
+
 # Watchlist Model for Movies
 class Watchlist(models.Model):
     watchlist_user = models.ForeignKey(User, on_delete=models.CASCADE)
     movies = models.ManyToManyField(Movie, related_name='watchlist')
     added_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
 
     def __str__(self):
         return f"Watchlist of {self.watchlist_user}"
@@ -112,6 +119,6 @@ class Readlist(models.Model):
     readlist_user = models.ForeignKey(User, on_delete=models.CASCADE)
     books = models.ManyToManyField(Book, related_name='readlist')
     added_at = models.DateTimeField(auto_now_add=True)
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
     def __str__(self):
         return f"Readlist of {self.readlist_user}"

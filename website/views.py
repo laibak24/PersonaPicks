@@ -61,20 +61,27 @@ def dashboard(request):
     username = user.username
     mbti_type = user.mbti_type.mbti_type if user.mbti_type else 'Not set'
 
-    # Construct the path for the avatar
-    avatar_filename = f"{mbti_type}.jpg"  # Assuming the files are named as MBTI type (e.g., 'INFP.jpeg')
+    avatar_filename = f"{mbti_type}.jpg"
     avatar_path = os.path.join(settings.STATIC_URL, 'avatars', avatar_filename)
 
-    # Get the user's watchlist and readlist
-    watchlist = Watchlist.objects.filter(watchlist_user=user).first().movies.all() if Watchlist.objects.filter(watchlist_user=user).exists() else []
-    readlist = Readlist.objects.filter(readlist_user=user).first().books.all() if Readlist.objects.filter(readlist_user=user).exists() else []
+    # Get the user's watchlist with statuses
+    watchlist = []
+    watchlist_obj = Watchlist.objects.filter(watchlist_user=user).first()
+    if watchlist_obj:
+        watchlist = [{'movie': movie, 'status': watchlist_obj.status} for movie in watchlist_obj.movies.all()]
+
+    # Get the user's readlist with statuses
+    readlist = []
+    readlist_obj = Readlist.objects.filter(readlist_user=user).first()
+    if readlist_obj:
+        readlist = [{'book': book, 'status': readlist_obj.status} for book in readlist_obj.books.all()]
 
     context = {
         'username': username,
         'mbti_type': mbti_type,
         'watchlist': watchlist,
         'readlist': readlist,
-        'avatar_path': avatar_path,  # Add avatar path to context
+        'avatar_path': avatar_path,
     }
 
     return render(request, 'dashboard.html', context)
@@ -209,4 +216,37 @@ def top_picks(request):
     # Fetch all feedbacks
     feedbacks = Feedback.objects.all().order_by('-created_at')  # You can order by the creation date if needed
     return render(request, 'top_picks.html', {'feedbacks': feedbacks})
+from django.shortcuts import redirect, get_object_or_404
+from .models import Readlist, Book
 
+@login_required
+def update_readlist_status(request, book_id):
+    if request.method == 'POST':
+        # Get the selected status
+        status = request.POST.get('status')
+        # Find the readlist for the user and book
+        readlist = Readlist.objects.filter(readlist_user=request.user).first()
+        book = get_object_or_404(Book, book_id=book_id)
+        
+        if readlist and book in readlist.books.all():
+            # Update the status
+            readlist.status = status
+            readlist.save()
+    
+    return redirect('dashboard')
+
+@login_required
+def update_watchlist_status(request, movie_id):
+    if request.method == 'POST':
+        # Get the selected status
+        status = request.POST.get('status')
+        # Find the watchlist for the user and movie
+        watchlist = Watchlist.objects.filter(watchlist_user=request.user).first()
+        movie = get_object_or_404(Movie, movie_id=movie_id)
+        
+        if watchlist and movie in watchlist.movies.all():
+            # Update the status
+            watchlist.status = status
+            watchlist.save()
+    
+    return redirect('dashboard')

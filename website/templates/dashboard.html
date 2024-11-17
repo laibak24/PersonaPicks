@@ -10,10 +10,21 @@
 
     <h3>Your Watchlist</h3>
     <ul class="list-group mb-4">
-        {% for movie in watchlist %}
+        {% for item in watchlist %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ movie.title }}
-                <form action="{% url 'remove_from_watchlist' movie.movie_id %}" method="post" class="d-inline">
+                <div>
+                    <strong>{{ item.movie.title }}</strong>
+                    <small class="text-muted">({{ item.status|capfirst }})</small>
+                </div>
+                <form action="{% url 'update_watchlist_status' item.movie.movie_id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                        <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if item.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </form>
+                <form action="{% url 'remove_from_watchlist' item.movie.movie_id %}" method="post" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                 </form>
@@ -22,13 +33,24 @@
             <li class="list-group-item">No movies in your watchlist.</li>
         {% endfor %}
     </ul>
-    
+            
     <h3>Your Readlist</h3>
     <ul class="list-group">
-        {% for book in readlist %}
+        {% for item in readlist %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ book.title }}
-                <form action="{% url 'remove_from_readlist' book.book_id %}" method="post" class="d-inline">
+                <div>
+                    <strong>{{ item.book.title }}</strong>
+                    <small class="text-muted">({{ item.status|capfirst }})</small>
+                </div>
+                <form action="{% url 'update_readlist_status' item.book.book_id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                        <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if item.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </form>
+                <form action="{% url 'remove_from_readlist' item.book.book_id %}" method="post" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                 </form>
@@ -37,18 +59,18 @@
             <li class="list-group-item">No books in your readlist.</li>
         {% endfor %}
     </ul>
-
+        
     <!-- Feedback Section -->
-    <h3>Give Feedback</h3>
-    <form action="{% url 'submit_feedback' %}" method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="feedback_message"></label>
-            <textarea id="feedback_message" name="message" class="form-control" rows="4" placeholder="Enter your feedback here"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Submit</button>
-    </form>
+    <div class="feedback-form">
+        <h3>Give Feedback</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ feedback_form.as_p }}  <!-- This renders the form fields -->
+            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+        </form>
+    </div>
 
+    
     {% if messages %}
     <div class="alert-messages mt-4">
         {% for message in messages %}

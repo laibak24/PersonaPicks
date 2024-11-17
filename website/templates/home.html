@@ -1,23 +1,35 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
     Home - MBTI-Based Recommendations
 {% endblock %}
 
 {% block content %}
-    <section class="about-section text-center my-5">
-        <h2>About This Website</h2>
-        <p class="lead">We recommend movies, books, and songs based on your personality type! Sign up or log in to explore personalized content tailored to your MBTI.</p>
-    </section>
-
-    <div class="text-center mb-4">
-        <a href="{% url 'register' %}" class="btn btn-custom">Sign Up</a>
-        <!-- Link the login button to the login page -->
-        <a href="{% url 'login' %}" class="btn btn-custom">Log In</a>
-
+<div class="container">
+    <div class="main-content">
+        <img src="{% static 'page_images/girlreading.png' %}" alt="Character Image">
     </div>
 
-    <div class="external-link text-center">
-        <p>Don't know your MBTI type? <a href="https://www.16personalities.com/free-personality-test" target="_blank">Take the test here</a>.</p>
-    </div>
+    <div class="sidebar">
+        <div class="box-top">
+            <a href="{% url 'register' %}" class="sign-in-btn">Sign Up</a>
+            <a href="{% url 'login' %}" class="log-in-btn">Log In</a>
+        </div>
+
+        <div class="box middle">
+            <div class="mainpart">
+                <div class="logo">
+                    <img src="{% static 'page_images/logo.png' %}" alt="Logo">
+                </div>
+                    </div>
+        </div>
+
+        <div class="box-bottom">
+            <div class="quiz-prompt">
+                <img src="{% static 'page_images/pointer.png' %}" alt="Take the Quiz" class="quiz-image">
+                <p class="quiz-text">Explore a world tailored to your MBTI type! <br><a href="https://www.16personalities.com" target="_blank" class="quiz-link">Take the quiz here</a>.</p>
+            </div>        
+            </div>
+</div>
 {% endblock %}

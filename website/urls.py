@@ -11,7 +11,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('books/', views.books_view, name='books'),
     path('movies/', views.movies_view, name='movies'),
-    path('songs/', views.songs_view, name='songs'),
+   # path('songs/', views.songs_view, name='songs'),
     path('add_to_watchlist/<int:movie_id>/', views.add_to_watchlist, name='add_to_watchlist'),
     path('add_to_readlist/<int:book_id>/', views.add_to_readlist, name='add_to_readlist'),
     path('remove_from_watchlist/<int:movie_id>/', views.remove_from_watchlist, name='remove_from_watchlist'),
@@ -19,6 +19,9 @@ urlpatterns = [
     path('give_feedback/', views.give_feedback, name='give_feedback'),
     path('submit_feedback/', views.submit_feedback, name='submit_feedback'),
     path('top-picks/', views.top_picks, name='top_picks'),
+    path('update_watchlist_status/<int:movie_id>/', views.update_watchlist_status, name='update_watchlist_status'),
+    path('update_readlist_status/<int:book_id>/', views.update_readlist_status, name='update_readlist_status'),
+
 ]
  
 
