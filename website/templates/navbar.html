@@ -1,40 +1,161 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'dashboard' %}">MBTI Recs</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'movies' %}">Movies</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'books' %}">Books</a>
-            </li>
-            <!-- Add link to Top Picks page -->
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'top_picks' %}">Top Picks</a>
-            </li>
-        </ul>
-        <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    User Settings
-                </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                    {% if user.is_authenticated %}
-                        <a class="dropdown-item" href="{% url 'dashboard' %}">Profile</a>
-                        <a class="dropdown-item">Change Password</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
-                    {% else %}
-                        <a class="dropdown-item" href="{% url 'login' %}">Log In</a>
-                    {% endif %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navbar</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;  /* Light background */
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #6c4f94; /* Lavender background */
+            padding: 15px 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo img {
+            height: 70px;  /* Increased logo size */
+            max-width: 160%;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links li {
+            margin: 0 25px;
+            position: relative;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            padding: 6px 12px;
+        }
+
+        .nav-links a:hover {
+            color: #ffb6c1;  /* Soft pink hover effect */
+            background-color: #9b6fa6;  /* Slight darker lavender on hover */
+            border-radius: 4px;
+        }
+
+        /* Highlight active link */
+        .nav-links a.active {
+            color: #ffb6c1; /* Soft pink for active link */
+            font-weight: bold;
+            border-bottom: 2px solid #ffb6c1;  /* Underline effect for active tab */
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #6c4f94;
+            min-width: 160px;
+            z-index: 1;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: block;
+            font-weight: 400;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #9b6fa6; /* Darker lavender */
+            border-radius: 4px;
+        }
+
+        /* Logout button style */
+        .logout-btn {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            background-color: #8d8b8c; /* Muted gray */
+            border-radius: 4px;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+
+        .logout-btn:hover {
+            background-color: #6d6a6a; /* Darker gray on hover */
+            color: #f1c40f; /* Soft gold text color on hover */
+        }
+
+        /* Responsive navbar for smaller screens */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 15px;
+            }
+
+            .nav-links li {
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% static 'page_images/logo.png' %}" alt="Logo">  <!-- Replace with your logo file -->
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="{% url 'about' %}">About</a></li>  <!-- Active class applied here -->
+            <li><a href="{% url 'dashboard' %}" class="active">Dashboard</a></li>
+            <li><a href="{% url 'connect' %}">Connect</a></li>
+            <li><a href="{% url 'top_picks' %}">Top Picks</a></li>
+
+            <li class="dropdown">
+                <a href="#">Explore</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'movies' %}">Movies</a>
+                    <a href="{% url 'books' %}">Books</a>
                 </div>
             </li>
         </ul>
-    </div>
-</nav>
+
+        <!-- Logout button -->
+        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+    </nav>
+
+</body>
+</html>

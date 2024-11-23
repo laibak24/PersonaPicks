@@ -34,3 +34,11 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = ['message']  # Only include the 'message' field for feedback
+
+class EditBioForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['bio']
+        widgets = {
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Tell others about yourself!'}),
+        }

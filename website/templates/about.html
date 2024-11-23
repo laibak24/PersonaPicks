@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="custom-container">
+    <!-- Header Section -->
+    <header class="header-section text-center">
+        <h1 class="main-heading">Welcome to PersonaPicks</h1>
+        <p class="subheading">Discover movies and books tailored to your personality type!</p>
+    </header>
+
+    <!-- Purpose Section -->
+    <section class="purpose-section text-center">
+        <h2 class="section-title">Our Purpose</h2>
+        <p>At PersonaPicks, we connect you to movies and books that align with your unique MBTI personality type. Whether you're an INTJ, ENFP, or any other type, our platform helps you find recommendations that truly resonate with you.</p>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works text-center">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-description">Follow these simple steps to get started:</p>
+        <div class="steps-container">
+            <!-- Step 1 -->
+            <div class="step">
+                <div class="icon-circle">
+                    <img src="{% static 'page_images/icon1.png' %}" alt="Sign Up">
+                </div>
+                <h3 class="step-title">Step 1: Sign Up</h3>
+                <p class="step-description">Create your profile and select your MBTI personality type.</p>
+            </div>
+            <!-- Step 2 -->
+            <div class="step">
+                <div class="icon-circle">
+                    <img src="{% static 'page_images/icon2.png' %}" alt="Get Recommendations">
+                </div>
+                <h3 class="step-title">Step 2: Get Recommendations</h3>
+                <p class="step-description">Receive personalized movie and book suggestions tailored to you.</p>
+            </div>
+            <!-- Step 3 -->
+            <div class="step">
+                <div class="icon-circle">
+                    <img src="{% static 'page_images/icon3.png' %}" alt="Explore & Track">
+                </div>
+                <h3 class="step-title">Step 3: Explore & Track</h3>
+                <p class="step-description">Track your watchlist and connect with others for more inspiration.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <h2 class="section-title text-center">User Testimonials</h2>
+        {% if feedbacks %}
+            <div class="testimonials-container">
+                {% for feedback in feedbacks %}
+                    <div class="testimonial">
+                        <h4 class="testimonial-author">{{ feedback.feedback_giver.username }}</h4>
+                        <p class="testimonial-text">"{{ feedback.message }}"</p>
+                        <span class="testimonial-date">{{ feedback.created_at|date:"F j, Y" }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-testimonials">No testimonials yet. Be the first to leave feedback!</p>
+        {% endif %}
+    </section>
+
+    <!-- Feedback Form Section -->
+    <section class="feedback-form-section">
+        <h2 class="section-title text-center">Give Us Your Feedback</h2>
+        <form method="post" class="feedback-form">
+            {% csrf_token %}
+            {{ feedback_form.as_p }}
+            <button type="submit" class="submit-button">Submit Feedback</button>
+        </form>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer-section text-center">
+        <p>&copy; 2024 PersonaPicks. All rights reserved.</p>
+    </footer>
+</div>
+
+<style>
+    /* General Styling */
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f7f3fa;
+        color: #3c2c4d;
+    }
+
+    .custom-container {
+        padding: 20px;
+    }
+
+    /* Header Section */
+    .header-section {
+        padding: 60px 0;
+        background-color: #3c2c4d;
+        color: #fff;
+    }
+
+    .main-heading {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .subheading {
+        font-size: 1.4rem;
+    }
+
+    /* Section Titles */
+    .section-title {
+        font-size: 2.2rem;
+        color: #3c2c4d;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+
+    /* Purpose Section */
+    .purpose-section {
+        background-color: #ffffff;
+        padding: 50px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 50px;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+        padding: 60px 20px;
+        background-color: #f7f3fa; /* Light purple background */
+    }
+
+    .steps-container {
+        display: flex;
+        justify-content: space-around;
+        gap: 20px;
+    }
+
+    .step {
+        width: 30%;
+        text-align: center;
+    }
+
+    /* Icon Circle Styling */
+    .icon-circle {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background-color: #3c2c4d; /* Dark purple background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .icon-circle img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    .step-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #3c2c4d;
+    }
+
+    .step-description {
+        font-size: 0.9rem;
+        color: #5b476a;
+    }
+
+    /* Testimonials Section */
+    .testimonials-section {
+        padding: 60px 20px;
+        background-color: #ede6f3;
+        border-radius: 12px;
+        margin-bottom: 50px;
+    }
+
+    .testimonials-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .testimonial {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 300px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .testimonial-author {
+        font-weight: bold;
+        color: #3c2c4d;
+        margin-bottom: 10px;
+    }
+
+    .testimonial-text {
+        font-size: 1rem;
+        color: #5b476a;
+        margin-bottom: 10px;
+    }
+
+    .testimonial-date {
+        font-size: 0.85rem;
+        color: #777;
+    }
+
+    .no-testimonials {
+        font-size: 1.2rem;
+        color: #5b476a;
+        text-align: center;
+    }
+
+    /* Feedback Form Section */
+    .feedback-form-section {
+        padding: 60px 20px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .feedback-form {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .submit-button {
+        background-color: #3c2c4d;
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .submit-button:hover {
+        background-color: #5b476a;
+    }
+
+    /* Footer Section */
+    .footer-section {
+        padding: 20px;
+        background-color: #3c2c4d;
+        color: #fff;
+    }
+</style>
+{% endblock %}

@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block title %}Movie Recommendations{% endblock %}
 
 {% block content %}
+{% include 'navbar.html' %}
 <div class="container mt-5">
     <h1 class="mb-4 text-center">Movie Recommendations</h1>
 
@@ -13,38 +15,197 @@
     </div>
     {% endif %}
 
-    <div class="row">
+    <!-- Movies Layout -->
+    <div class="row justify-content-center">
         {% for movie in movies %}
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-light">
-                <img src="{% if movie.image %}{{ movie.image.url }}{% else %}{% static 'default_movie.jpg' %}{% endif %}" 
-                     alt="{{ movie.title }}" class="card-img-top" style="height: 250px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ movie.title }}</h5>
-                    <p class="card-text">{{ movie.description }}</p>
-                    <p class="card-text">
-                        <small class="text-muted">Release Date: {{ movie.release_date|date:"F d, Y" }}</small>
-                    </p>
+            <div class="col-md-4 mb-4 movie-card">
+                <div class="card shadow-sm border-light">
+                    <div class="card-img-container">
+                        <img src="{% if movie.image %}{{ movie.image.url }}{% else %}{% static 'default_movie.jpg' %}{% endif %}" 
+                             alt="{{ movie.title }}" class="card-img-top">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.title }}</h5>
+                        
+                        <!-- Hidden Content initially -->
+                        <div class="card-details">
+                            <p class="card-text">{{ movie.description }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">Release Date: {{ movie.release_date|date:"F d, Y" }}</small>
+                            </p>
 
-                    <!-- Add to Watchlist Form -->
-                    <form action="{% url 'add_to_watchlist' movie.movie_id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">Add to Watchlist</button>
-                    </form>
+                            <!-- Add to Watchlist Form -->
+                            <form action="{% url 'add_to_watchlist' movie.movie_id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-watchlist">Add to Watchlist</button>
+                            </form>
 
-                    <div class="mt-3">
-                        <button class="btn" style="background-color: #28a745; color: white;">{{ movie.first_preference }}</button>
-                        <button class="btn" style="background-color: #ffc107; color: white;">{{ movie.second_preference }}</button>
-                        <button class="btn" style="background-color: #dc3545; color: white;">{{ movie.third_preference }}</button>
+                            <!-- New Preference Style -->
+                            <div class="preferences">
+                                <div class="preference-item success">{{ movie.first_preference }}</div>
+                                <div class="preference-item warning">{{ movie.second_preference }}</div>
+                                <div class="preference-item danger">{{ movie.third_preference }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <p>No movies found.</p>
-        </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+/* General Styling */
+body {
+    font-family: 'Poppins', sans-serif;  /* Use modern fonts like Poppins */
+    background-color: #141414;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;  /* Center the container */
+    padding: 20px;
+}
+
+/* Header */
+h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #e50914;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Cards Layout */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;  /* Center align the row items */
+    align-items: center;  /* Center vertically */
+}
+
+/* Card Setup */
+.card {
+    background-color: #1c1c1c;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    max-width: 240px;  /* Reduced card width for smaller cards */
+}
+
+/* Make the images smaller and fit nicely within the cards */
+.card-img-container {
+    height: 200px;  /* Reduced height */
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+}
+
+/* Card Body */
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+/* Hidden Content */
+.card-details {
+    display: none; /* Hide by default */
+}
+
+/* Hover Effect: Display content */
+.card:hover .card-details {
+    display: block;
+}
+
+/* Hover Effect for Card */
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+}
+
+.card:hover .card-img-top {
+    opacity: 0.85;
+}
+
+/* Preference Section (Updated) */
+.preferences {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.preference-item {
+    padding: 8px 15px;
+    border-radius: 5px;
+    color: #fff;
+    font-weight: bold;
+    text-transform: capitalize;
+    font-size: 0.9rem;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.preference-item.success {
+    background-color: #28a745;
+}
+
+.preference-item.warning {
+    background-color: #ffc107;
+}
+
+.preference-item.danger {
+    background-color: #dc3545;
+}
+
+/* Buttons */
+.btn-watchlist {
+    background-color: #e50914;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    width: 100%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-watchlist:hover {
+    background-color: #f40612;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .col-md-4 {
+        flex: 0 0 calc(33.33% - 20px);  /* Three movies in a row */
+    }
+}
+
+@media (max-width: 576px) {
+    .col-md-4 {
+        flex: 0 0 100%;
+    }
+}
+</style>
+
 {% endblock %}

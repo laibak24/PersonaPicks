@@ -1,83 +1,290 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Welcome, {{ username }}!</h1>
-    <h2>Your MBTI Type: {{ mbti_type }}</h2>
-    
-    <img src="{{ avatar_path }}" alt="{{ mbti_type }} Avatar" class="mbti-avatar" style="width: 100px; height: 100px;"/>
+<!-- Navbar -->
+{% include 'navbar.html' %}
 
-    <h3>Your Watchlist</h3>
-    <ul class="list-group mb-4">
-        {% for item in watchlist %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ item.movie.title }}</strong>
-                    <small class="text-muted">({{ item.status|capfirst }})</small>
-                </div>
-                <form action="{% url 'update_watchlist_status' item.movie.movie_id %}" method="post" class="d-inline">
-                    {% csrf_token %}
-                    <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
-                        <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not Started</option>
-                        <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
-                        <option value="completed" {% if item.status == 'completed' %}selected{% endif %}>Completed</option>
-                    </select>
-                </form>
-                <form action="{% url 'remove_from_watchlist' item.movie.movie_id %}" method="post" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                </form>
-            </li>
-        {% empty %}
-            <li class="list-group-item">No movies in your watchlist.</li>
-        {% endfor %}
-    </ul>
-            
-    <h3>Your Readlist</h3>
-    <ul class="list-group">
-        {% for item in readlist %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ item.book.title }}</strong>
-                    <small class="text-muted">({{ item.status|capfirst }})</small>
-                </div>
-                <form action="{% url 'update_readlist_status' item.book.book_id %}" method="post" class="d-inline">
-                    {% csrf_token %}
-                    <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
-                        <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not Started</option>
-                        <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
-                        <option value="completed" {% if item.status == 'completed' %}selected{% endif %}>Completed</option>
-                    </select>
-                </form>
-                <form action="{% url 'remove_from_readlist' item.book.book_id %}" method="post" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                </form>
-            </li>
-        {% empty %}
-            <li class="list-group-item">No books in your readlist.</li>
-        {% endfor %}
-    </ul>
-        
-    <!-- Feedback Section -->
-    <div class="feedback-form">
-        <h3>Give Feedback</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ feedback_form.as_p }}  <!-- This renders the form fields -->
-            <button type="submit" class="btn btn-primary">Submit Feedback</button>
-        </form>
-    </div>
-
-    
-    {% if messages %}
-    <div class="alert-messages mt-4">
-        {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
-            {{ message }}
+<div class="dashboard">
+    <!-- Header Section -->
+    <div class="header">
+        <div class="overlay">
+            <h1 class="dashboard-title">PersonaPicks Dashboard</h1>
+            <p class="username">Welcome, {{ username }}!</p>
+            <p class="mbti">MBTI Type: <strong>{{ mbti_type }}</strong></p>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Column -->
+        <div class="left-column">
+
+            <!-- Clock Section -->
+            <div class="card clock-card">
+                <h2 id="clock">--:--</h2>
+                <p id="date">Loading date...</p>
+            </div>
+
+            <!-- Social Stats -->
+            <div class="card stats-card">
+                <h3>Social Stats</h3>
+                <p><strong>{{ followers_count }}</strong> Followers</p>
+                <p><strong>{{ following_count }}</strong> Following</p>
+            </div>
+                        <!-- Bio Section -->
+<div class="card bio-card">
+    <h3>Bio</h3>
+    <p>{{ user_profile.bio|default:"No bio added yet." }}</p>
+    <button id="edit-bio-btn" onclick="toggleBioForm()">Edit Bio</button>
+    <form id="edit-bio-form" action="{% url 'dashboard' %}" method="post" style="display: none;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+        <button type="button" onclick="toggleBioForm()">Cancel</button>
+    </form>
+</div>
+
+        </div>
+
+        <!-- Middle Column -->
+        <div class="middle-column">
+            <!-- Watchlist Section -->
+            <div class="card list-card">
+                <h4>Your Watchlist</h4>
+                <ul class="list-group">
+                    {% for item in watchlist %}
+                    <li>
+                        <div>
+                            <strong>{{ item.movie.title }}</strong>
+                            <span class="status">{{ item.status|capfirst }}</span>
+                        </div>
+                        <div>
+                            <form action="{% url 'update_watchlist_status' item.movie.movie_id %}" method="post">
+                                {% csrf_token %}
+                                <select name="status" onchange="this.form.submit()">
+                                    <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                                    <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="completed" {% if item.status == 'completed' %}selected{% endif %}>Completed</option>
+                                </select>
+                            </form>
+                            <form action="{% url 'remove_from_watchlist' item.movie.movie_id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li>No movies in your watchlist.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Readlist Section -->
+            <div class="card list-card">
+                <h4>Your Readlist</h4>
+                <ul class="list-group">
+                    {% for item in readlist %}
+                    <li>
+                        <div>
+                            <strong>{{ item.book.title }}</strong>
+                            <span class="status">{{ item.status|capfirst }}</span>
+                        </div>
+                        <div>
+                            <form action="{% url 'update_readlist_status' item.book.book_id %}" method="post">
+                                {% csrf_token %}
+                                <select name="status" onchange="this.form.submit()">
+                                    <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                                    <option value="in_progress" {% if item.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="completed" {% if item.status == 'completed' %}selected{% endif %}>Completed</option>
+                                </select>
+                            </form>
+                            <form action="{% url 'remove_from_readlist' item.book.book_id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li>No books in your readlist.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+            <!-- Activity Log Section -->
+            <div class="card activity-card">
+                <h4>Recent Activity</h4>
+                {% if activity_feed %}
+                <ul>
+                    {% for activity in activity_feed %}
+                    <li>
+                        <strong>{{ activity.user.username }}</strong> {{ activity.action }}
+                        <small>{{ activity.created_at|date:"F j, Y, g:i A" }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No recent activity.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Dynamic Clock -->
+<script>
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+        const date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        document.getElementById('clock').textContent = `${hours}:${minutes}`;
+        document.getElementById('date').textContent = `${day}, ${date}`;
+    }
+        function toggleBioForm() {
+            var form = document.getElementById("edit-bio-form");
+            var bioBtn = document.getElementById("edit-bio-btn");
+            if (form.style.display === "none") {
+                form.style.display = "block";
+                bioBtn.style.display = "none";
+            } else {
+                form.style.display = "none";
+                bioBtn.style.display = "inline";
+            }
+        }
+    
+    // Update clock every second
+    setInterval(updateClock, 1000);
+    updateClock(); // Initialize clock immediately
+</script>
+
+<style>
+    /* General Styling */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fc;
+    }
+
+    .dashboard {
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    /* Header Section */
+    .header {
+        position: relative;
+        background: url("{% static 'page_images/header.jpg' %}") no-repeat center center/cover;
+        height: 200px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+
+    .header .overlay {
+        background-color: rgba(255, 255, 255, 0.8);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-radius: 15px;
+    }
+
+    .dashboard-title {
+        font-size: 28px;
+        color: #333;
+        margin: 0;
+    }
+
+    .username, .mbti {
+        font-size: 16px;
+        margin: 5px 0;
+        color: #555;
+    }
+
+    /* Main Content */
+    .main-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    /* Cards Styling */
+    .card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Clock Card */
+    .clock-card {
+        text-align: center;
+    }
+
+    #clock {
+        font-size: 48px;
+        margin: 0;
+        color: #ff6363;
+    }
+
+    #date {
+        font-size: 16px;
+        color: #777;
+    }
+
+    /* Stats Card */
+    .stats-card {
+        text-align: center;
+    }
+
+    .stats-card h3 {
+        margin-bottom: 10px;
+    }
+
+    /* Activity Log Styling */
+    .activity-card {
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+    .activity-card h4 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .activity-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .activity-card ul li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .activity-card ul li:last-child {
+        border-bottom: none;
+    }
+
+    .activity-card ul li strong {
+        color: #333;
+    }
+
+    .activity-card ul li small {
+        display: block;
+        font-size: 12px;
+        color: #aaa;
+    }
+</style>
 {% endblock %}

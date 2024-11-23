@@ -7,7 +7,6 @@ from .models import *
 admin.site.register(User)
 admin.site.register(Movie)   
 admin.site.register(Book)   
-admin.site.register(Song)  
 admin.site.register(Watchlist)   
 admin.site.register(Readlist)   
 admin.site.register(Feedback)   
