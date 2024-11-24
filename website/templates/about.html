@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+        color: #333;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: #604568;
+        color: #fff;
+        padding: 20px 0;
+        text-align: center;
+        margin-top: 150px; /* Offset for navbar */
+        margin-bottom: 50px;     /* Adjust margin as needed */
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        margin: 0;
+    }
+
+    /* Section Styling */
+    .section {
+        padding: 40px 20px;
+        margin: 20px auto;
+        max-width: 1000px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+        font-size: 2rem;
+        color: #604568;
+        margin-bottom: 15px;
+    }
+
+    .section p {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    /* Testimonials */
+    .testimonial {
+        margin-top: 20px;
+        padding: 20px;
+        border-left: 4px solid #604568;
+        background: #f9f9f9;
+        border-radius: 5px;
+    }
+
+    .testimonial h3 {
+        margin: 0 0 10px 0;
+        font-size: 1.3rem;
+        color: #333;
+    }
+
+    .testimonial p {
+        margin: 0;
+        font-size: 1rem;
+        color: #555;
+    }
+
+    .testimonial .user {
+        margin-top: 10px;
+        font-style: italic;
+        font-size: 0.9rem;
+        color: #777;
+    }
+
+    /* Feedback Form */
+    .feedback-form {
+        margin-top: 20px;
+    }
+
+    .feedback-form label {
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .feedback-form .form-control {
+        margin-bottom: 15px;
+        padding: 10px;
+        font-size: 1rem;
+    }
+
+    .feedback-form button {
+        background: #604568;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .feedback-form button:hover {
+        background: #503457;
+    }
+</style>
+
+<div class="page-header">
+    <h1>About Us</h1>
+</div>
+
+<!-- Section 1: Introduction -->
+<div class="section">
+    <h2>Welcome to Our Website</h2>
+    <p>
+        Our platform is your go-to solution for personalized entertainment recommendations. Whether you're looking for
+        movies to watch, books to read, or music to listen to, we curate the best options tailored to your personality
+        and preferences. Explore, discover, and enjoy a world of creativity right at your fingertips.
+    </p>
+</div>
+
+<!-- Section 2: User Testimonials -->
+<div class="section">
+    <h2>What Our Users Say</h2>
+    {% for testimonial in testimonials %}
+    <div class="testimonial">
+        <p>{{ testimonial.feedback }}</p>
+        <div class="user">- {{ testimonial.name }}</div>
+    </div>
+    {% empty %}
+    <p>No testimonials yet. Be the first to share your thoughts!</p>
+    {% endfor %}
+</div>
+
+<!-- Section 3: Feedback Form -->
+<div class="section feedback-form">
+    <h2>Share Your Feedback</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Feedback</button>
+    </form>
+</div>
+
+{% endblock %}
