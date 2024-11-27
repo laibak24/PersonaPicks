@@ -23,9 +23,23 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, default="Enter email")
     mbti_type = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True)
     avatar = models.ImageField(upload_to='avatars/', default="avatar.svg", null=True)
+    # Add this to the User model
+    bio = models.TextField(blank=True, default="Tell others about yourself!")
+    # Follow feature
+    following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+
+#Activity Model
+class ActivityFeed(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
+    action = models.CharField(max_length=255)  # e.g., "added 'Inception' to their watchlist"
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.action} at {self.created_at}"
+
 # Movie Model
 class Movie(models.Model):
     movie_id = models.AutoField(primary_key=True)
@@ -59,22 +73,6 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
-# Song Model
-class Song(models.Model):
-    song_id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=255)
-    artist = models.CharField(max_length=255, blank=True)
-    album = models.CharField(max_length=255, blank=True)
-    release_date = models.DateField(null=True, blank=True)
-    image = models.ImageField(upload_to='song_images/', default='default_song.jpg')
-
-    # Adding MBTI preferences
-    first_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_songs_first')
-    second_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_songs_second')
-    third_preference = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True, related_name='preferred_songs_third')
-
-    def __str__(self):
-        return self.title
 
 # Feedback Model
 class Feedback(models.Model):
@@ -86,13 +84,21 @@ class Feedback(models.Model):
     def __str__(self):
         return f"Feedback by {self.feedback_giver}"
 
+class Testimonial(models.Model):
+    name = models.CharField(max_length=100)
+    feedback = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.feedback[:50]}"
+
+
 # Recommendations Model
 class Recommendation(models.Model):
     recommendation_id = models.AutoField(primary_key=True)
     recommendation_for_user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.SET_NULL, null=True, blank=True)
     book = models.ForeignKey(Book, on_delete=models.SET_NULL, null=True, blank=True)
-    song = models.ForeignKey(Song, on_delete=models.SET_NULL, null=True, blank=True)
     recommended_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -107,18 +113,91 @@ STATUS_CHOICES = [
 # Watchlist Model for Movies
 class Watchlist(models.Model):
     watchlist_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    movies = models.ManyToManyField(Movie, related_name='watchlist')
     added_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
 
     def __str__(self):
         return f"Watchlist of {self.watchlist_user}"
 
+    def save(self, *args, **kwargs):
+        # Log activity on save
+        if self.pk is None:  # Only for new entries
+            ActivityFeed.objects.create(
+                user=self.watchlist_user,
+                action=f"added movies to their watchlist."
+            )
+        super().save(*args, **kwargs)
+
 # Readlist Model for Books
 class Readlist(models.Model):
     readlist_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    books = models.ManyToManyField(Book, related_name='readlist')
     added_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
     def __str__(self):
         return f"Readlist of {self.readlist_user}"
+
+    def save(self, *args, **kwargs):
+        # Log activity on save
+        if self.pk is None:  # Only for new entries
+            ActivityFeed.objects.create(
+                user=self.readlist_user,
+                action=f"added books to their readlist."
+            )
+        super().save(*args, **kwargs)
+
+# Updated Watchlist with an Intermediate Model
+class WatchlistItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='watchlist_items')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}'s watchlist item: {self.movie.title} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # Log activity on save for new items
+        if self.pk is None:
+            ActivityFeed.objects.create(
+                user=self.user,
+                action=f"added '{self.movie.title}' to their watchlist."
+            )
+        super().save(*args, **kwargs)
+
+# Updated Readlist with an Intermediate Model
+class ReadlistItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='readlist_items')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}'s readlist item: {self.book.title} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # Log activity on save for new items
+        if self.pk is None:
+            ActivityFeed.objects.create(
+                user=self.user,
+                action=f"added '{self.book.title}' to their readlist."
+            )
+        super().save(*args, **kwargs)
+
+class FriendRequest(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_requests')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests')
+    is_accepted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender} to {self.receiver} - {'Accepted' if self.is_accepted else 'Pending'}"
+class CompatibilityScore(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compatibility_scores')
+    compared_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compared_scores')
+    score = models.FloatField()
+
+    class Meta:
+        unique_together = ('user', 'compared_user')
+
+    def __str__(self):
+        return f"Compatibility between {self.user} and {self.compared_user}: {self.score}"
+
+

@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, MBTIType
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, MBTIType, Feedback
+from .models import User, MBTIType, Feedback, Testimonial
 class UserRegistrationForm(UserCreationForm):
     mbti_type = forms.ModelChoiceField(
         queryset=MBTIType.objects.all(),
@@ -34,3 +34,20 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = ['message']  # Only include the 'message' field for feedback
+
+class EditBioForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['bio']
+        widgets = {
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Tell others about yourself!'}),
+        }
+
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = ['name', 'feedback']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Enter your name'}),
+            'feedback': forms.Textarea(attrs={'placeholder': 'Share your thoughts...'}),
+        }

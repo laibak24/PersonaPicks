@@ -7,155 +7,110 @@
   body {
     margin: 0;
     padding: 0;
-    background-color: #c59bbb; /* Purple background */
+    background-color: #e9ecef; /* Purple background */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-family: Arial, sans-serif; /* Ensure consistent font */
+    font-family: Arial, sans-serif;
     color: #333; /* Darker text for readability */
   }
 
   .container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 90%; /* Wider container for larger boxes */
-    max-width: 1400px; /* Max width for better layout */
-    padding: 0; /* Remove padding to ensure boxes are joined */
+    width: 90%; /* Adjust width to avoid overflow */
+    max-width: 1400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Single shadow for whole container */
+    border-radius: 25px; /* Combined rounded corners */
+    overflow: hidden; /* Ensures both boxes remain joined */
   }
 
-  .box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 650px; /* Increased height for both boxes */
-    border-radius: 25px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Softer shadow for better appearance */
-  }
-
-  /* Left box (purple background) */
-  .box-left {
-    background-color: #80567e; /* Purple color */
-    color: white;
-    width: 500px; /* Wider left box */
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 25px 0 0 25px; /* Rounded left corners */
-  }
-
-  .box-left img.mainpic {
-    max-width: 130%;
-    height: auto;
-    border-radius: 15px;
-  }
-
-  /* Right box (white background with purple text) */
   .box-right {
-    background-color: white;
-    color: #80567e; /* Purple text */
-    width: 700px; /* Wider right box */
-    height: 100%;
-    padding: 20px;
+    flex: 1; /* Same width as the left box */
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* This ensures the button is at the bottom */
+    justify-content: space-between; /* Spacing for form layout */
+    padding: 20px; /* Space around content */
     align-items: center;
-    border-radius: 0 25px 25px 0; /* Rounded right corners */
+    width: 100%;
+    height: 100%;
+    color: #8e4d76;
   }
 
-  .box-right .card {
+  .card {
+    margin-top: 5%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%;
-    width: 100%;
+    height: 90%;
+    width: 35%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   .card-header h3 {
     text-align: center;
     font-size: 20px;
-    margin-bottom: 0px;
-    font-family: 'Arial', sans-serif;
     font-weight: 600;
+    margin-bottom: 20px;
   }
 
   .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     width: 100%;
   }
 
   .form-group label {
-    display: block;
+    font-size: 13px;
     font-weight: bold;
-    margin-bottom: 5px;
-    text-align: left;
-    font-family: 'Arial', sans-serif;
-    font-size: 14px;
+    display: block;
+    margin-bottom: 2px;
   }
 
-  .form-group input, .form-group select {
+  .form-group input,
+  .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 8px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
     font-size: 14px;
-  }
-
-  .text-danger {
-    color: #ff6f61;
-    font-size: 12px;
-    text-align: left;
-    margin-top: 5px;
   }
 
   .btn-custom {
     width: 100%;
-    padding: 10px; /* Reduced padding for smaller button height */
-    background-color: #a25d93; /* Darker purple color */
+    padding: 10px;
+    background-color: #604568; /* Button color */
     color: white;
     border: none;
     border-radius: 5px;
-    cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    font-family: 'Arial', sans-serif;
+    cursor: pointer;
   }
 
   .btn-custom:hover {
-    background-color: #8e4d76; /* Darker shade for hover effect */
+    background-color: #7a4a6a;
   }
 
   @media (max-width: 768px) {
     .container {
-      flex-direction: column;
-      width: 90%; /* Adjust for smaller screens */
+      flex-direction: column; /* Stack boxes vertically */
     }
 
     .box {
-      width: 100%;
-      height: auto;
+      width: 100%; /* Full width for smaller screens */
     }
 
     .box-left,
     .box-right {
-      width: 100%;
+      height: auto;
     }
   }
 </style>
 
 <div class="container">
-  <!-- Left Box with Image -->
-  <div class="box box-left">
-    <img class="mainpic" src="{% static 'page_images/music_girl.png' %}" alt="Decorative Image">
-  </div>
 
   <!-- Right Box with Form -->
-  <div class="box box-right">
+  <div class="box-right">
     <div class="card">
       <div class="card-header">
         <h3>Create Account</h3>
