@@ -1,4 +1,4 @@
-INSERT INTO your_app_mbtitype (mbti_type_id, mbti_type) VALUES
+INSERT INTO website_mbtitype (mbti_type_id, mbti_type) VALUES
     (1, 'INTJ'),
     (2, 'INTP'),
     (3, 'ENTJ'),

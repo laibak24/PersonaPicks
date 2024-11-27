@@ -1,6 +1,6 @@
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, UserLoginForm, TestimonialForm
+from .forms import UserRegistrationForm, UserLoginForm
 from .models import Watchlist, Readlist,Movie, Book, User, ActivityFeed, MBTIType, ReadlistItem, WatchlistItem
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -9,7 +9,6 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages  # Import for messages
 from django.urls import reverse
-from .models import Testimonial
 
 
 
@@ -48,21 +47,6 @@ def login_user(request):
     
     return render(request, 'login.html', {'form': form})
 
-def about(request):
-    if request.method == "POST":
-        form = TestimonialForm(request.POST)
-        if form.is_valid():
-            form.save()  # Save the testimonial to the database
-            return redirect('about')  # Redirect to the same page after submitting
-    else:
-        form = TestimonialForm()
-    
-    testimonials = Testimonial.objects.all().order_by('-created_at')  # Get all testimonials, latest first
-
-    return render(request, 'about.html', {
-        'form': form,
-        'testimonials': testimonials
-    })
 
 
 # User Logout View
@@ -72,8 +56,8 @@ def logout_user(request):
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Watchlist, Readlist, ActivityFeed, User
-from .forms import EditBioForm  # Import the bio form
+from .models import Watchlist, Readlist, ActivityFeed, User, Feedback
+from .forms import FeedbackForm, EditBioForm  # Import the bio form
 from django.conf import settings
 
 import os
@@ -89,45 +73,62 @@ import os
 def dashboard(request):
     user = request.user
 
-    # Fetching the avatar based on the MBTI type
+    # Avatar Path
     avatar_path = user.avatar.url if user.avatar else 'default_avatar.svg'
 
     # Retrieve watchlist and readlist items
     watchlist = WatchlistItem.objects.filter(user=user)
     readlist = ReadlistItem.objects.filter(user=user)
 
-    # Retrieve activity feed
+    # Activity Feed
     activity_feed = ActivityFeed.objects.filter(
         Q(user=user) | Q(user__in=user.following.all())
     ).order_by('-created_at')[:10]
 
-    # Calculate follower and following counts
+    # Follower and Following Counts
     followers_count = user.followers.count()
     following_count = user.following.count()
-# Handle bio form submission
+
+    # Handle bio form submission
     if request.method == 'POST':
         form = EditBioForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            return redirect('dashboard')  # Redirect back to the dashboard after saving
+            return redirect('dashboard')  # Redirect to avoid resubmission
     else:
         form = EditBioForm(instance=user)
 
     context = {
         'username': user.username,
-        'bio': user.bio,
+        'bio': user.bio,  # Pass the bio explicitly
         'mbti_type': user.mbti_type.mbti_type if user.mbti_type else 'Not set',
         'avatar_path': avatar_path,
         'watchlist': watchlist,
         'readlist': readlist,
         'activity_feed': activity_feed,
-        'followers_count': followers_count,  # Add follower count to context
-        'following_count': following_count,  # Add following count to context
+        'followers_count': followers_count,
+        'following_count': following_count,
         'form': form,
     }
 
     return render(request, 'dashboard.html', context)
-                  
+
+from django.shortcuts import render
+from .models import ActivityFeed
+
+def activity(request):
+    user = request.user
+    
+    # Activity Feed
+    activity_feed = ActivityFeed.objects.filter(
+        Q(user=user) | Q(user__in=user.following.all())
+    ).order_by('-created_at')[:10]
+
+    context = {
+        'activity_feed': activity_feed,
+    }
+    return render(request, 'activity.html', context)
+
 @login_required
 def follow_user(request, user_id):
     user_to_follow = get_object_or_404(User, user_id=user_id)
@@ -247,36 +248,6 @@ def remove_from_readlist(request, book_id):
 
     return redirect('dashboard')
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Feedback
-from .forms import FeedbackForm
-
-# View to give feedback
-@login_required
-def give_feedback(request):
-    if request.method == "POST":
-        form = FeedbackForm(request.POST)
-        if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.feedback_giver = request.user  # Set the user as the feedback giver
-            feedback.save()
-            return redirect('all_feedbacks')  # Redirect to feedback display page after saving
-    else:
-        form = FeedbackForm()
-    return render(request, 'feedback/give_feedback.html', {'form': form})
-
-def submit_feedback(request):
-    if request.method == 'POST':
-        message = request.POST.get('message')
-        if message:
-            feedback = Feedback(feedback_giver=request.user, message=message)
-            feedback.save()
-            messages.success(request, 'Thank you for your feedback!')
-        else:
-            messages.error(request, 'Please enter some feedback.')
-    return redirect('dashboard')  # Redirect back to the dashboard
-
 
 @login_required
 def update_watchlist_status(request, movie_id):
@@ -367,14 +338,45 @@ def calculate_compatibility(request, user_id):
     messages.error(request, "MBTI types are missing for one or both users.")
     return redirect('other_dashboard', user_id=compared_user.id)
 
+from django.contrib import messages
+
+# View to submit feedback
+@login_required
+def give_feedback(request):
+    if request.method == "POST":
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.feedback_giver = request.user  # Link the feedback to the logged-in user
+            feedback.save()
+            messages.success(request, "Thank you for your feedback!")
+            return redirect('about')  # Redirect to the 'about' page or desired location
+        else:
+            messages.error(request, "There was an error with your submission. Please try again.")
+    else:
+        form = FeedbackForm()
+
+    return render(request, 'feedback/give_feedback.html', {'form': form})
+
+# View to display all feedback on the about page
+from django.contrib import messages
+
 def about(request):
-    feedback_form = FeedbackForm()
-    feedbacks = Feedback.objects.all()  # Or any logic to fetch feedbacks
-    context = {
-        'feedback_form': feedback_form,
-        'feedbacks': feedbacks,
-    }
-    return render(request, 'about.html', context)
+    if request.method == "POST":
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.feedback_giver = request.user  # Set the feedback giver to the logged-in user
+            feedback.save()
+            messages.success(request, "Thank you for your feedback!")
+            return redirect('about')  # Refresh the page to show the new feedback
+        else:
+            messages.error(request, "There was an error. Please try again.")
+    else:
+        form = FeedbackForm()
+
+    feedbacks = Feedback.objects.all().order_by('-created_at')  # Fetch all feedback, sorted by newest
+    return render(request, 'about.html', {'feedbacks': feedbacks, 'form': form})
 
 @login_required
 def top_picks(request):

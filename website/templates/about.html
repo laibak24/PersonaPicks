@@ -26,7 +26,7 @@
             <!-- Step 1 -->
             <div class="step">
                 <div class="icon-circle">
-                    <img src="{% static 'page_images/icon1.png' %}" alt="Sign Up">
+                    <img src="{% static 'page_images/icon1.jpg' %}" alt="Sign Up">
                 </div>
                 <h3 class="step-title">Step 1: Sign Up</h3>
                 <p class="step-description">Create your profile and select your MBTI personality type.</p>
@@ -34,7 +34,7 @@
             <!-- Step 2 -->
             <div class="step">
                 <div class="icon-circle">
-                    <img src="{% static 'page_images/icon2.png' %}" alt="Get Recommendations">
+                    <img src="{% static 'page_images/icon2.jpg' %}" alt="Get Recommendations">
                 </div>
                 <h3 class="step-title">Step 2: Get Recommendations</h3>
                 <p class="step-description">Receive personalized movie and book suggestions tailored to you.</p>
@@ -42,55 +42,38 @@
             <!-- Step 3 -->
             <div class="step">
                 <div class="icon-circle">
-                    <img src="{% static 'page_images/icon3.png' %}" alt="Explore & Track">
+                    <img src="{% static 'page_images/icon3.jpg' %}" alt="Explore & Track">
                 </div>
                 <h3 class="step-title">Step 3: Explore & Track</h3>
                 <p class="step-description">Track your watchlist and connect with others for more inspiration.</p>
             </div>
         </div>
     </section>
-
-    <!-- Testimonials Section -->
-    <div class="section">
-        <h2>What Our Users Say</h2>
-        {% for testimonial in testimonials %}
-        <div class="testimonial">
-            <h3>{{ testimonial.feedback|truncatechars:75 }}</h3>
-            <p>{{ testimonial.feedback }}</p>
-            <div class="user">- {{ testimonial.name }}</div>
-        </div>
-        {% empty %}
-        <p>No testimonials yet. Be the first to share your thoughts!</p>
-        {% endfor %}
+<!-- Testimonials Section -->
+<div class="section text-center">
+    <h2 class="section-title">Voices of PersonaPicks</h2>
+    {% for feedback in feedbacks %}
+    <div class="testimonial mx-auto">
+        <p class="testimonial-text">"{{ feedback.message|truncatechars:150 }}"</p>
+        <div class="user">- {{ feedback.feedback_giver.username }}</div>
     </div>
-    
-    <!-- Feedback Form -->
-<div class="section">
-    <h2>Share Your Feedback</h2>
-    <form method="post">
+    {% empty %}
+    <p class="no-feedback">No testimonials yet. Be the first to share your thoughts!</p>
+    {% endfor %}
+</div>
+
+<!-- Feedback Form Section -->
+<div class="section text-center mt-5">
+    <h2 class="section-title">We Value Your Thoughts!</h2>
+    <form method="post" class="feedback-form">
         {% csrf_token %}
-        {{ TestimonialForm.as_p }}
-        
-        <!-- Input for Name -->
-        <input 
-            type="text" 
-            id="name" 
-            name="name" 
-            class="form-control" 
-            placeholder="Enter your name" 
-            required>
-
-        <!-- Feedback Text Area -->
         <textarea 
-            id="feedback" 
-            name="feedback" 
+            name="message" 
             class="form-control" 
-            rows="4" 
-            placeholder="Share your thoughts..." 
-            required
-        ></textarea>
-
-        <button type="submit" class="btn-btn-primary">Submit Feedback</button>
+            rows="5" 
+            placeholder="Write your feedback here..."
+            required></textarea>
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
     </form>
 </div>
 
@@ -226,32 +209,88 @@
 
     /* Testimonials */
     .testimonial {
-        margin-top: 20px;
+        margin: 20px auto;
         padding: 20px;
         border-left: 4px solid #604568;
         background: #f9f9f9;
-        border-radius: 5px;
+        border-radius: 8px;
+        max-width: 700px; /* Center-align with narrower width */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-family: 'Times New Roman', Times, serif;
     }
-
-    .testimonial h3 {
-        margin: 0 0 10px 0;
-        font-size: 1.3rem;
+    
+    .testimonial-text {
+        font-size: 1.2rem;
+        font-style: italic;
         color: #333;
     }
-
-    .testimonial p {
-        margin: 0;
-        font-size: 1rem;
-        color: #555;
-    }
-
+    
     .testimonial .user {
         margin-top: 10px;
         font-style: italic;
-        font-size: 0.9rem;
+        font-size: 1rem;
         color: #777;
     }
-
+    
+    /* No Feedback Message */
+    .no-feedback {
+        font-size: 1rem;
+        color: #555;
+        margin-top: 10px;
+    }
+    
+    /* Feedback Form */
+    .feedback-form {
+        max-width: 700px; /* Restrict width */
+        margin: 0 auto; /* Center-align the form */
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Space between elements */
+    }
+    
+        .feedback-form .form-control {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+            color: #3c2c4d;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+    
+        .feedback-form .form-control:focus {
+            border-color: #604568;
+            outline: none;
+            box-shadow: 0 0 5px rgba(96, 69, 104, 0.5);
+            background-color: #ffffff;
+        }
+    
+        .feedback-form .btn-primary {
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            background-color: #604568;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+    
+        .feedback-form .btn-primary:hover {
+            background-color: #503457;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px); /* Subtle hover lift effect */
+        }
+    
+        .feedback-form .btn-primary:active {
+            transform: translateY(0); /* Reset lift on click */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
     /* Feedback Form */
     .feedback-form {
         margin-top: 20px;

@@ -19,8 +19,8 @@ class MBTIType(models.Model):
 # Custom User Model
 class User(AbstractUser):
     user_id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=150, unique=True, default="Enter username")
-    email = models.EmailField(unique=True, default="Enter email")
+    username = models.CharField(max_length=150, unique=True, default="")
+    email = models.EmailField(unique=True, default="")
     mbti_type = models.ForeignKey(MBTIType, on_delete=models.SET_NULL, null=True)
     avatar = models.ImageField(upload_to='avatars/', default="avatar.svg", null=True)
     # Add this to the User model
@@ -83,15 +83,6 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback by {self.feedback_giver}"
-
-class Testimonial(models.Model):
-    name = models.CharField(max_length=100)
-    feedback = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.name} - {self.feedback[:50]}"
-
 
 # Recommendations Model
 class Recommendation(models.Model):
@@ -181,14 +172,6 @@ class ReadlistItem(models.Model):
             )
         super().save(*args, **kwargs)
 
-class FriendRequest(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_requests')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests')
-    is_accepted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.sender} to {self.receiver} - {'Accepted' if self.is_accepted else 'Pending'}"
 class CompatibilityScore(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compatibility_scores')
     compared_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compared_scores')
@@ -199,5 +182,3 @@ class CompatibilityScore(models.Model):
 
     def __str__(self):
         return f"Compatibility between {self.user} and {self.compared_user}: {self.score}"
-
-

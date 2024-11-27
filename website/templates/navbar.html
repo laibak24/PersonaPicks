@@ -6,7 +6,6 @@
 <style>
     .navbar {
         background-color: #fff;
-        /* border-bottom: 1px solid rgb(167, 163, 163); */
         box-shadow: 0 0 8px rgb(180, 178, 178);
         font-family: Arial, sans-serif;
         padding: 15px 30px;
@@ -51,11 +50,37 @@
         box-shadow: 0 0 10px 3px #fff;
         color: #fff;
     }
-    button a:hover{
+
+    button a:hover {
         text-decoration: none;
         color: #fff;
+    }.bell-icon {
+        width: 50px; /* Increased size */
+        height: 50px;
+        cursor: pointer;
+        transition: transform 0.3s ease, filter 0.3s ease; /* Smooth transition */
     }
-    </style>
+    
+    .bell-icon:hover {
+        transform: scale(1.1); /* Slightly enlarges the icon */
+        filter: brightness(1); /* Brightens the icon */
+    }
+    
+        .activity-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+        }
+    
+        .activity-link:hover {
+            filter: brightness(1.2);
+        }    
+
+</style>
+
 <div>
     <nav class="navbar">
         <div class="logo">
@@ -63,10 +88,16 @@
         </div>
         <ul>
             <button><a href="{% url 'about' %}">About</a></button>
-            <button><a href="{% url 'top_picks' %}">Top picks</a></button>
+            <button><a href="{% url 'top_picks' %}">Top Picks</a></button>
             <button><a href="{% url 'dashboard' %}">Dashboard</a></button>
             <button><a href="{% url 'connect' %}">Connect</a></button>
-            <button><a href="{% url 'logout' %}" class="logout-btn">Logout</a></button>
+            <button><a href="{% url 'logout' %}">Logout</a></button>
+            <!-- Bell Icon for Activity -->
+            <button class="activity-link">
+                <a href="{% url 'activity' %}">
+                    <img src="{% static 'page_images/bell.png' %}" alt="Activity" class="bell-icon">
+                </a>
+            </button>
         </ul>
     </nav>
 </div>

@@ -43,7 +43,6 @@
 
     .welcome-text {
         background: url("{% static 'page_images/header.jpg' %}") no-repeat center center/cover;
-        font-family: 'Times New Roman', Times, serif, sans-serif;
         color: #2f3e46;
         font-weight: bold ;
         width: 80%;
@@ -135,11 +134,13 @@
         margin-bottom: 5%;
     }
 
-    /* Clock Card */
+    /* Bio Card */
+    .bio-card {
+        text-align: center;
+    }
     .clock-card {
         text-align: center;
     }
-
     #clock {
         font-size: 48px;
         margin: 0;
@@ -166,45 +167,13 @@
         margin-bottom: 10px;
     }
 
-    /* Activity Log Styling */
-    .activity-card {
-        overflow-y: auto;
-        max-height: 400px;
-    }
-
-    .activity-card h4 {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #333;
-    }
-
-    .activity-card ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .activity-card ul li {
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
-
-    .activity-card ul li:last-child {
-        border-bottom: none;
-    }
-
-    .activity-card ul li strong {
-        color: #333;
-    }
-
-    .activity-card ul li small {
-        display: block;
-        font-size: 12px;
-        color: #aaa;
-    }
     .edit-buttton{
         background-color: #604568;
         color: #fff
+    }
+    .edit-button {
+            color: white; /* Set text color to white */
+        
     }
     /* Main Content */
 
@@ -219,8 +188,6 @@
     }
 
     .list-section h3 {
-        font-family: 'Times New Roman', Times, serif, sans-serif;
-        font-weight: bold;
         color: #2f3e46;
         font-size: 1.5rem;
         margin-bottom: 10px;
@@ -248,79 +215,6 @@
     }
 
 
-    /* Activity Log Section */
-    .activity-log {
-        margin-top: 40px;
-        background: #fff;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 91%;
-        margin-left: 10% ;
-        margin-right: 10%;
-        color: #333;
-        font-family: 'Arial', sans-serif;
-    }
-    .activitylog1{
-        width: auto;
-    }
-
-    /* Section Title */
-    .activitylog1 h4 {
-        font-size: 1.8rem;
-        font-family: 'Times New Roman', Times, serif;
-        color: #604568;
-        margin-bottom: 15px;
-        text-align: center;
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 5px;
-    }
-
-/* Activity List Styling */
-    .activitylog1 ul {
-        overflow-y: auto;
-        list-style: none;
-        width: auto;
-        padding: 0;
-        margin: 0;
-    }
-
-    .activitylog1 li {
-        padding: 10px 15px;
-        border-bottom: 1px solid #e9ecef;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        transition: background 0.3s;
-    }
-
-    .activitylog1 li:last-child {
-        border-bottom: none; /* Remove border for the last item */
-    }
-
-    .activitylog1 li:hover {
-        background-color: #f9f9f9;
-    }
-
-    /* Highlight Username */
-    .activitylog1 li strong {
-        color: #604568;
-        font-weight: bold;
-    }
-
-    /* Action Text */
-    .activitylog1 li small {
-        color: #888;
-        font-size: 0.9rem;
-        align-self: flex-end;
-    }
-
-    /* No Activity Message */
-    .activitylog1 p {
-        text-align: center;
-        color: #888;
-        font-style: italic;
-    }
 
     
 </style>
@@ -360,15 +254,15 @@
         <!-- Bio Section -->
         <div class="card bio-card">
             <h3>Bio</h3>
-            <p>{{ user_profile.bio|default:"No bio added yet." }}</p>
-            <button id="edit-bio-btn" class="edit-buttton" onclick="toggleBioForm()">Edit Bio</button>
+            <p id="bio-text">{{ bio|default:"No bio added yet." }}</p>
+            <button id="edit-bio-btn" class="edit-button" onclick="toggleBioForm()">Update Bio</button>
             <form id="edit-bio-form" action="{% url 'dashboard' %}" method="post" style="display: none;">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit">Save</button>
                 <button type="button" onclick="toggleBioForm()">Cancel</button>
             </form>
-        </div>
+        </div>        
     </div>
 
     <!-- Main Content -->
@@ -447,25 +341,6 @@
     </div>
     </div>
 </div>
-    <div class="activity-log">
-        <!-- Activity Log Section -->
-        <div class="activitylog1">
-            <h4>Recent Activity</h4>
-            {% if activity_feed %}
-            <ul>
-                {% for activity in activity_feed %}
-                <li>
-                    <strong>{{ activity.user.username }}</strong> {{ activity.action }}
-                    <small>{{ activity.created_at|date:"F j, Y, g:i A" }}</small>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p>No recent activity.</p>
-            {% endif %}
-        </div>
-    </div>
-
 <script>
     function updateClock() {
         const now = new Date();
@@ -478,17 +353,20 @@
         document.getElementById('date').textContent = `${day}, ${date}`;
     }
         function toggleBioForm() {
-            var form = document.getElementById("edit-bio-form");
-            var bioBtn = document.getElementById("edit-bio-btn");
-            if (form.style.display === "none") {
-                form.style.display = "block";
-                bioBtn.style.display = "none";
+            const form = document.getElementById('edit-bio-form');
+            const bioText = document.getElementById('bio-text');
+            const editButton = document.getElementById('edit-bio-btn');
+        
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                bioText.style.display = 'none';
+                editButton.style.display = 'none';
             } else {
-                form.style.display = "none";
-                bioBtn.style.display = "inline";
+                form.style.display = 'none';
+                bioText.style.display = 'block';
+                editButton.style.display = 'inline-block';
             }
-        }
-    
+        }        
     // Update clock every second
     setInterval(updateClock, 1000);
     updateClock(); // Initialize clock immediately
