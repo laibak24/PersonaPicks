@@ -11,7 +11,7 @@
         
         <!-- User Avatar and Bio -->
         <div class="user-avatar">
-                 <img src="{% static 'avatars/' %}{{ selected_user.mbti_type.mbti_type }}.jpg" alt="{{ user.username }}" class="mbti-avatar">
+            <img src="{% static 'avatars/' %}{{ selected_user.mbti_type.mbti_type|default:'default' }}.jpg" alt="{{ selected_user.username }}" class="mbti-avatar">
         </div>
         <div class="user-bio">
             <h4>About {{ selected_user.username }}</h4>
@@ -42,9 +42,9 @@
     <!-- Compatibility Score Section -->
     <div class="compatibility-section">
         <h3>Compatibility Score</h3>
-        {% if error_message %}
-            <div class="alert alert-danger">
-                <strong>Error:</strong> {{ error_message }}
+        {% if compatibility_score == 0 %}
+            <div class="alert alert-warning">
+                <strong>Warning:</strong> Compatibility cannot be calculated due to missing MBTI types for one or both users.
             </div>
         {% else %}
             <p>Your Compatibility with {{ selected_user.username }}: {{ compatibility_score|floatformat:2 }}%</p>
@@ -55,8 +55,8 @@
     <div class="list-section">
         <h3>Watchlist</h3>
         <ul class="list-group">
-            {% for item in watchlist_movies %}
-                <li class="list-group-item">{{ item.movie.title }}</li>
+            {% for item in watchlist %}
+                <li class="list-group-item">{{ item.title }}</li> <!-- Accessing the title directly from the dictionary -->
             {% empty %}
                 <li class="list-group-item text-muted">No movies in the watchlist.</li>
             {% endfor %}
@@ -67,14 +67,42 @@
     <div class="list-section">
         <h3>Readlist</h3>
         <ul class="list-group">
-            {% for item in readlist_books %}
-                <li class="list-group-item">{{ item.book.title }}</li>
+            {% for item in readlist %}
+                <li class="list-group-item">{{ item.title }}</li> <!-- Accessing the title directly from the dictionary -->
             {% empty %}
                 <li class="list-group-item text-muted">No books in the readlist.</li>
             {% endfor %}
         </ul>
     </div>
-</div>
+
+    <!-- Personalized Lists Section -->
+    <div class="list-section">
+        {% for p_list in personalized_lists %}
+            <h3>{{ p_list.list_name }}</h3>
+            <p>Created at: {{ p_list.created_at }}</p>
+    
+            <h4>Movies:</h4>
+            <ul>
+                {% for movie in p_list.movies %}
+                    <li>{{ movie.title }} - Rating: {{ movie.rating }} - Review: {{ movie.review }}</li>
+                {% empty %}
+                    <li>No movies in this list.</li>
+                {% endfor %}
+            </ul>
+    
+            <h4>Books:</h4>
+            <ul>
+                {% for book in p_list.books %}
+                    <li>{{ book.title }} - Rating: {{ book.rating }} - Review: {{ book.review }}</li>
+                {% empty %}
+                    <li>No books in this list.</li>
+                {% endfor %}
+            </ul>
+        {% empty %}
+            <p>No personalized lists available.</p>
+        {% endfor %}
+    </div>
+    </div>
 
 
 <style>
@@ -179,8 +207,8 @@
     color: white;
     border: none;
 }
-.btn-primary:hover{
-    background-color: #a68cae
+.btn-primary:hover {
+    background-color: #a68cae;
 }
 .btn-secondary {
     background-color: #604568;

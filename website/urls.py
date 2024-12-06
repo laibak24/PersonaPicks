@@ -2,7 +2,6 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views  # Assuming views are in the same directory
 from django.conf import settings
-
 urlpatterns = [
     # Home Page
     path('', views.home, name='home'),
@@ -28,10 +27,18 @@ urlpatterns = [
     path('top-picks/', views.top_picks, name='top_picks'),
     path('update_watchlist_status/<int:movie_id>/', views.update_watchlist_status, name='update_watchlist_status'),
     path('update_readlist_status/<int:book_id>/', views.update_readlist_status, name='update_readlist_status'),
+
     path('connect/', views.connect, name='connect'),
     path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
     path('feedback/', views.give_feedback, name='give_feedback'),
     path('activity/', views.activity, name='activity'),
+    # Compatibility
+    path('calculate_compatibility/<int:user_id>/', views.calculate_compatibility, name='calculate_compatibility'),
+    path('create_list/', views.create_list, name='create_list'),
+    path('add_movie/<int:list_id>/', views.add_movie_to_list, name='add_movie_to_list'),
+    path('add_book/<int:list_id>/', views.add_book_to_list, name='add_book_to_list'),
+    path('delete_list/<int:list_id>/', views.delete_list, name='delete_list'),
+
 
 ]
  
