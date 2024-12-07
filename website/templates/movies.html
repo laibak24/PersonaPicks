@@ -103,8 +103,7 @@
         color: #604568;
         border: 1px solid #c59bbb;
     }
-</style>
-<div class="container mt-5">
+</style><div class="container mt-5">
     <div class="welcome-section">
         <h1 class="welcome-text">Movie Recommendations</h1>
     </div>
@@ -120,9 +119,9 @@
         {% for movie in movies %}
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm border-light">
-                <img src="{% if movie.image %}{{ movie.image.url }}{% else %}{% static 'default_movie.jpg' %}{% endif %}" 
-                     alt="{{ movie.title }}" class="card-img-top">
-                <div class="card-body">
+                <img src="{% if movie.image %}{% static movie.image %}{% else %}{% static 'default_movie.jpg' %}{% endif %}" 
+                alt="{{ movie.title }}" class="card-img-top">
+                  <div class="card-body">
                     <h5 class="card-title">{{ movie.title }}</h5>
                     <p class="card-text">{{ movie.description }}</p>
                     <p class="card-text">
@@ -151,4 +150,5 @@
     </div>
 </div>
 {% endblock %}
+
 

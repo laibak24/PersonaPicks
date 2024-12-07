@@ -12,19 +12,8 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-family: Arial, sans-serif;
-    color: #333; /* Darker text for readability */
+    font-family: Arial, sans-serif; /* Consistent font */
   }
-
-  .container {
-    display: flex;
-    width: 90%; /* Adjust width to avoid overflow */
-    max-width: 1400px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Single shadow for whole container */
-    border-radius: 25px; /* Combined rounded corners */
-    overflow: hidden; /* Ensures both boxes remain joined */
-  }
-
   .box-right {
     flex: 1; /* Same width as the left box */
     display: flex;
@@ -36,7 +25,13 @@
     height: 100%;
     color: #8e4d76;
   }
+  .box-right a {
+    text-decoration: none; /* Remove underline for links inside .box-left */
+  }
 
+  .box-right a:hover {
+    text-decoration: none; /* Ensure no underline on hover as well */
+  }
   .card {
     margin-top: 5%;
     display: flex;
@@ -88,8 +83,26 @@
   }
 
   .btn-custom:hover {
-    background-color: #7a4a6a;
+    background-color: #c59bbb;
   }
+  .icon-container {
+  position: absolute;
+  top: 10px; /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
+  z-index: 10; /* Ensure it appears above other elements */
+}
+
+.add-button i {
+  margin-left: 30%;
+  color: #604568; /* Icon color */
+  font-size: 1.5rem; /* Icon size */
+  text-decoration: none;
+}
+
+.add-button:hover i {
+  color: #c59bbb; /* Hover color */
+}
+
 
   @media (max-width: 768px) {
     .container {
@@ -106,9 +119,13 @@
     }
   }
 </style>
+<div class="icon-container">
+  <a href="{% url 'home' %}" class="add-button">
+    <i class="fa-solid fa-house"></i>
+  </a>
+</div>
 
 <div class="container">
-
   <!-- Right Box with Form -->
   <div class="box-right">
     <div class="card">

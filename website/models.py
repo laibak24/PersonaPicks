@@ -182,3 +182,46 @@ class CompatibilityScore(models.Model):
 
     def __str__(self):
         return f"Compatibility between {self.user} and {self.compared_user}: {self.score}"
+
+    # Personalized List Model
+class PersonalizedList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='personalized_lists')
+    list_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s {self.list_name}"
+
+# Personalized Movie Entry in the List
+class PersonalizedMovie(models.Model):
+    personalized_list = models.ForeignKey(PersonalizedList, on_delete=models.CASCADE, related_name='movies')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 11)])  # Rating from 1 to 10
+    review = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"{self.movie.title} in {self.personalized_list.list_name}"
+
+# Personalized Book Entry in the List
+class PersonalizedBook(models.Model):
+    personalized_list = models.ForeignKey(PersonalizedList, on_delete=models.CASCADE, related_name='books')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(choices=[(i, i) for i in range(1, 11)])  # Rating from 1 to 10
+    review = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.book.title} in {self.personalized_list.list_name}"
+
+class Referral(models.Model):
+    referrer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='referrals_made')
+    referee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='referrals_received')
+    movie = models.ForeignKey(Movie, on_delete=models.SET_NULL, null=True, blank=True)
+    book = models.ForeignKey(Book, on_delete=models.SET_NULL, null=True, blank=True)
+    referred_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        if self.movie:
+            return f"{self.referrer.username} referred {self.movie.title} to {self.referee.username}"
+        elif self.book:
+            return f"{self.referrer.username} referred {self.book.title} to {self.referee.username}"
+        return "Referral"

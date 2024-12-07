@@ -42,3 +42,21 @@ class EditBioForm(forms.ModelForm):
         widgets = {
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Tell others about yourself!'}),
         }
+
+from django import forms
+from .models import PersonalizedList, PersonalizedMovie, PersonalizedBook
+
+class PersonalizedListForm(forms.ModelForm):
+    class Meta:
+        model = PersonalizedList
+        fields = ['list_name']
+
+class PersonalizedMovieForm(forms.ModelForm):
+    class Meta:
+        model = PersonalizedMovie
+        fields = ['movie', 'rating', 'review']
+
+class PersonalizedBookForm(forms.ModelForm):
+    class Meta:
+        model = PersonalizedBook
+        fields = ['book', 'rating', 'review']

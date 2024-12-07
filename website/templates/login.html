@@ -23,7 +23,13 @@
     align-items: center;
     width: 100%;
   }
+  .box-left a {
+    text-decoration: none; /* Remove underline for links inside .box-left */
+  }
 
+  .box-left a:hover {
+    text-decoration: none; /* Ensure no underline on hover as well */
+  }
 
   .card {
     display: flex;
@@ -35,6 +41,7 @@
   }
 
   .card-header h3 {
+    color: #604568;
     text-align: center;
     font-size: 24px; /* Larger font for the title */
     font-family: 'Arial', sans-serif;
@@ -56,6 +63,7 @@
   }
 
   .form-group label {
+    color: #604568;
     display: block;
     font-weight: bold;
     margin-bottom: 5px;
@@ -97,7 +105,7 @@
   }
 
   .btn-custom:hover {
-    background-color: #7a4a6a;
+    background-color: #c59bbb;
   }
 
   .card-footer {
@@ -119,6 +127,23 @@
     color: #a25d93; /* Slightly brighter on hover */
   }
 
+  .icon-container {
+    position: absolute;
+    top: 10px; /* Adjust as needed */
+    left: 10px; /* Adjust as needed */
+    z-index: 10; /* Ensure it appears above other elements */
+  }
+
+.add-button i {
+  color: #604568; /* Icon color */
+  font-size: 1.5rem; /* Icon size */
+  text-decoration: none;
+}
+
+.add-button:hover i {
+  color: #c59bbb; /* Hover color */
+}
+
   @media (max-width: 768px) {
     .container {
       flex-direction: column;
@@ -139,6 +164,11 @@
   }
 </style>
 
+<div class="icon-container">
+  <a href="{% url 'home' %}" class="add-button">
+    <i class="fa-solid fa-house"></i>
+  </a>
+</div>
 <div class="container">
   <!-- Left Box with Form -->
   <div class="box-left">

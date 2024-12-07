@@ -69,24 +69,55 @@ from .models import Watchlist, Readlist, ActivityFeed
 from django.conf import settings
 
 import os
+from django.db import connection
+
+from django.db import connection
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from website.models import WatchlistItem, ReadlistItem
+from .models import PersonalizedList, PersonalizedMovie, PersonalizedBook, Movie, Book
+from django.contrib.auth.decorators import login_required
+from .forms import PersonalizedListForm, PersonalizedMovieForm, PersonalizedBookForm
+
+from django.shortcuts import get_object_or_404
+from .models import PersonalizedList
+
 @login_required
 def dashboard(request):
     user = request.user
-
-    # Avatar Path
     avatar_path = user.avatar.url if user.avatar else 'default_avatar.svg'
 
-    # Retrieve watchlist and readlist items
-    watchlist = WatchlistItem.objects.filter(user=user)
-    readlist = ReadlistItem.objects.filter(user=user)
+    # Raw SQL for watchlist and readlist
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT w.movie_id, w.status, m.title
+            FROM website_watchlistitem w
+            JOIN website_movie m ON w.movie_id = m.movie_id
+            WHERE w.user_id = %s
+        """, [user.user_id])
+        watchlist = cursor.fetchall()
 
-    # Activity Feed
-    activity_feed = ActivityFeed.objects.filter(
-        Q(user=user) | Q(user__in=user.following.all())
-    ).order_by('-created_at')[:10]
+        cursor.execute("""
+            SELECT r.book_id, r.status, b.title
+            FROM website_readlistitem r
+            JOIN website_book b ON r.book_id = b.book_id
+            WHERE r.user_id = %s
+        """, [user.user_id])
+        readlist = cursor.fetchall()
 
-    # Follower and Following Counts
-    followers_count = user.followers.count()
+    # Raw SQL for activity feed
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT * FROM website_activityfeed 
+            WHERE user_id = %s OR user_id IN (
+                SELECT from_user_id FROM website_user_following WHERE from_user_id = %s
+            )
+            ORDER BY created_at DESC LIMIT 10
+        """, [user.user_id, user.user_id])
+        activity_feed = cursor.fetchall()
+
+    # Follower and following counts
+    followers_count = user.followers.count()  
     following_count = user.following.count()
 
     # Handle bio form submission
@@ -94,24 +125,120 @@ def dashboard(request):
         form = EditBioForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            return redirect('dashboard')  # Redirect to avoid resubmission
+            return redirect('dashboard')
     else:
         form = EditBioForm(instance=user)
 
+    # Process watchlist and readlist into usable context
+    watchlist_items = [
+        {'movie_id': item[0], 'status': item[1], 'title': item[2]}
+        for item in watchlist
+    ]
+    readlist_items = [
+        {'book_id': item[0], 'status': item[1], 'title': item[2]}
+        for item in readlist
+    ]
+
+    # Fetch personalized lists
+    personalized_lists = PersonalizedList.objects.filter(user=user).prefetch_related('movies', 'books')
+
+    # Prepare personalized list context
+    personalized_list_data = []
+    for p_list in personalized_lists:
+        movies = [
+            {'title': movie.movie.title, 'rating': movie.rating, 'review': movie.review}
+            for movie in p_list.movies.all()
+        ]
+        books = [
+            {'title': book.book.title, 'rating': book.rating, 'review': book.review}
+            for book in p_list.books.all()
+        ]
+        personalized_list_data.append({
+            'id' : p_list.id,
+            'list_name': p_list.list_name,
+            'created_at': p_list.created_at,
+            'movies': movies,
+            'books': books,
+        })
+
     context = {
         'username': user.username,
-        'bio': user.bio,  # Pass the bio explicitly
+        'bio': user.bio,
         'mbti_type': user.mbti_type.mbti_type if user.mbti_type else 'Not set',
         'avatar_path': avatar_path,
-        'watchlist': watchlist,
-        'readlist': readlist,
+        'watchlist': watchlist_items,
+        'readlist': readlist_items,
         'activity_feed': activity_feed,
         'followers_count': followers_count,
         'following_count': following_count,
         'form': form,
+        'personalized_lists': personalized_list_data,
     }
-
     return render(request, 'dashboard.html', context)
+
+
+
+@login_required
+def create_list(request):
+    if request.method == 'POST':
+        form = PersonalizedListForm(request.POST)
+        if form.is_valid():
+            personalized_list = form.save(commit=False)
+            personalized_list.user = request.user
+            personalized_list.save()
+            return redirect('dashboard')
+    else:
+        form = PersonalizedListForm()
+    return render(request, 'create_list.html', {'form': form})
+# views.py
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import PersonalizedList
+
+@login_required
+def delete_list(request, list_id):
+    # Get the personalized list
+    personalized_list = get_object_or_404(PersonalizedList, id=list_id)
+    
+    # Ensure that the current user is the owner of the list
+    if personalized_list.user == request.user:
+        personalized_list.delete()
+        # Redirect to a page where the user can see their updated lists (e.g., dashboard)
+        return redirect('dashboard')  # Adjust URL to where you want to redirect
+    else:
+        # Optionally, handle the case where the user is not the owner
+        return redirect('dashboard')  # Redirect if unauthorized
+
+@login_required
+def add_movie_to_list(request, list_id):
+    personalized_list = get_object_or_404(PersonalizedList, id=list_id, user=request.user)
+    if request.method == 'POST':
+        form = PersonalizedMovieForm(request.POST)
+        if form.is_valid():
+            movie_entry = form.save(commit=False)
+            movie_entry.personalized_list = personalized_list
+            movie_entry.save()
+            return redirect('dashboard')
+    else:
+        form = PersonalizedMovieForm()
+    return render(request, 'add_movie.html', {'form': form, 'list': personalized_list})
+
+@login_required
+def add_book_to_list(request, list_id):
+    personalized_list = get_object_or_404(PersonalizedList, id=list_id, user=request.user)
+    if request.method == 'POST':
+        form = PersonalizedBookForm(request.POST)
+        if form.is_valid():
+            book_entry = form.save(commit=False)
+            book_entry.personalized_list = personalized_list
+            book_entry.save()
+            return redirect('dashboard')
+    else:
+        form = PersonalizedBookForm()
+    return render(request, 'add_book.html', {'form': form, 'list': personalized_list})
+
+
 
 from django.shortcuts import render
 from .models import ActivityFeed
@@ -158,29 +285,90 @@ def follow_user(request, user_id):
 
     # Redirect to the user's profile with the updated counts
     return redirect('other_dashboard', user_id=user_id)
+# Books View using raw SQL
+from django.db import connection
+from django.shortcuts import render
+from django.db import connection
+from django.shortcuts import render
 
-# Books View
 def books_view(request):
-    # Fetch all books along with MBTI preferences
-    books = Book.objects.all().order_by('title')  # Order alphabetically by title or customize ordering as needed
-    
+    # Execute the raw SQL query to fetch books and their MBTI preferences
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT b.book_id, b.title, b.author, b.description, b.publication_year, b.image,
+                   mbti_first.mbti_type AS first_preference, 
+                   mbti_second.mbti_type AS second_preference, 
+                   mbti_third.mbti_type AS third_preference
+            FROM website_book b
+            LEFT JOIN website_mbtitype mbti_first ON b.first_preference_id = mbti_first.mbti_type_id
+            LEFT JOIN website_mbtitype mbti_second ON b.second_preference_id = mbti_second.mbti_type_id
+            LEFT JOIN website_mbtitype mbti_third ON b.third_preference_id = mbti_third.mbti_type_id
+            ORDER BY b.title
+        """)
+        books = cursor.fetchall()
+
+    # Process the raw query result into a list of dictionaries (for easier template access)
+    books_list = []
+    for book in books:
+        books_list.append({
+            'book_id': book[0],
+            'title': book[1],
+            'author': book[2],
+            'description': book[3],
+            'publication_year': book[4],
+            'image': book[5],
+            'first_preference': book[6],
+            'second_preference': book[7],
+            'third_preference': book[8],
+        })
+
     # Pass books to the template
     context = {
-        'books': books,
+        'books': books_list,
     }
-    
+
     return render(request, 'books.html', context)
 
+from django.db import connection
+
 def movies_view(request):
-    # Fetch all movies along with MBTI preferences
-    movies = Movie.objects.all().order_by('title')  # Order alphabetically by title or customize ordering as needed
-    
+    # Execute the raw SQL query to fetch movies and their MBTI preferences
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT m.movie_id, m.title, m.description, m.release_date, m.image,
+                   mbti_first.mbti_type AS first_preference, 
+                   mbti_second.mbti_type AS second_preference, 
+                   mbti_third.mbti_type AS third_preference
+            FROM website_movie m
+            LEFT JOIN website_mbtitype mbti_first ON m.first_preference_id = mbti_first.mbti_type_id
+            LEFT JOIN website_mbtitype mbti_second ON m.second_preference_id = mbti_second.mbti_type_id
+            LEFT JOIN website_mbtitype mbti_third ON m.third_preference_id = mbti_third.mbti_type_id
+            ORDER BY m.title
+        """)
+        # Fetch all results as a dictionary-like object
+        movies = cursor.fetchall()
+
+        # Convert raw results into a list of dictionaries
+        movie_list = []
+        for movie in movies:
+            movie_dict = {
+                'movie_id': movie[0],
+                'title': movie[1],
+                'description': movie[2],
+                'release_date': movie[3],
+                'image': movie[4],
+                'first_preference': movie[5],
+                'second_preference': movie[6],
+                'third_preference': movie[7],
+            }
+            movie_list.append(movie_dict)
+
     # Pass movies to the template
     context = {
-        'movies': movies,
+        'movies': movie_list,
     }
-    return render(request, 'movies.html', context)
 
+    return render(request, 'movies.html', context)
 
 @login_required
 @require_POST
@@ -361,46 +549,129 @@ def give_feedback(request):
 # View to display all feedback on the about page
 from django.contrib import messages
 
+from django.db import connection
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import FeedbackForm
+from .models import Feedback
+
+from django.db import connection
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
+from django.db import transaction
+from django.db import connection
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import FeedbackForm
+
 def about(request):
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.feedback_giver = request.user  # Set the feedback giver to the logged-in user
-            feedback.save()
-            messages.success(request, "Thank you for your feedback!")
-            return redirect('about')  # Refresh the page to show the new feedback
+            try:
+                # Start a transaction
+                with transaction.atomic():
+                    feedback = form.save(commit=False)
+                    feedback.feedback_giver = request.user  # Set the feedback giver to the logged-in user
+                    feedback.save()  # Save the feedback to the database
+                    messages.success(request, "Thank you for your feedback!")
+                    return redirect('about')  # Refresh the page to show the new feedback
+            except Exception as e:
+                # In case of an error, show a message and rollback the transaction
+                messages.error(request, "There was an error. Please try again.")
         else:
-            messages.error(request, "There was an error. Please try again.")
+            messages.error(request, "There was an error with the form. Please try again.")
     else:
         form = FeedbackForm()
 
-    feedbacks = Feedback.objects.all().order_by('-created_at')  # Fetch all feedback, sorted by newest
+    # Using raw SQL to fetch feedbacks along with the feedback giver's username
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT fb.feedback_id, fb.message, fb.feedback_giver_id, au.username, fb.created_at
+            FROM website_feedback fb
+            INNER JOIN website_user au ON fb.feedback_giver_id = au.user_id
+            ORDER BY fb.created_at DESC
+        """)
+        feedbacks = [
+            {
+                'id': row[0],
+                'message': row[1],
+                'feedback_giver_id': row[2],
+                'feedback_giver_name': row[3],  # Include username
+                'created_at': row[4],
+            }
+            for row in cursor.fetchall()
+        ]
+
     return render(request, 'about.html', {'feedbacks': feedbacks, 'form': form})
 
-@login_required
-def top_picks(request):
-    user_mbti_type = request.user.mbti_type  # Assuming the User model has the mbti_type attribute
-    
-    # Get movies that match the user's MBTI preferences
-    movies = Movie.objects.filter(
-        first_preference=user_mbti_type
-    ) | Movie.objects.filter(
-        second_preference=user_mbti_type
-    ) | Movie.objects.filter(
-        third_preference=user_mbti_type
-    )
-    
-    # Get books that match the user's MBTI preferences
-    books = Book.objects.filter(
-        first_preference=user_mbti_type
-    ) | Book.objects.filter(
-        second_preference=user_mbti_type
-    ) | Book.objects.filter(
-        third_preference=user_mbti_type
-    )
+from django.db import connection
+from django.shortcuts import render
+from django.db import connection
+from django.shortcuts import render
+from django.utils.timezone import now
+from django.db import transaction
+from django.db import connection
+from django.shortcuts import render
 
+def top_picks(request):
+    # Ensure the user has an MBTI type assigned
+    user_mbti_type_id = request.user.mbti_type_id
+
+    if user_mbti_type_id is None:
+        # Handle the case where the MBTI type is not assigned (optional, could redirect or return an error)
+        return render(request, 'error.html', {'message': 'MBTI type not set.'})
+    
+    try:
+        # Start a transaction
+        with transaction.atomic():
+            # Execute raw SQL to insert recommendations for movies matching user's preferences
+            with connection.cursor() as cursor:
+                # Insert movie recommendations
+                movie_query = """
+                    INSERT INTO website_recommendation (recommendation_for_user_id, movie_id, recommended_at)
+                    SELECT %s, movie_id, NOW()
+                    FROM website_movie
+                    WHERE first_preference_id = %s
+                       OR second_preference_id = %s
+                       OR third_preference_id = %s;
+                """
+                cursor.execute(movie_query, [request.user.user_id, user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+                
+                # Insert book recommendations
+                book_query = """
+                    INSERT INTO website_recommendation (recommendation_for_user_id, book_id, recommended_at)
+                    SELECT %s, book_id, NOW()
+                    FROM website_book
+                    WHERE first_preference_id = %s
+                       OR second_preference_id = %s
+                       OR third_preference_id = %s;
+                """
+                cursor.execute(book_query, [request.user.user_id, user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+        
+        # Get movies that match the user's MBTI preferences
+        movies = Movie.objects.raw("""
+            SELECT * FROM website_movie
+            WHERE first_preference_id = %s
+            OR second_preference_id = %s
+            OR third_preference_id = %s
+        """, [user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+        
+        # Get books that match the user's MBTI preferences
+        books = Book.objects.raw("""
+            SELECT * FROM website_book
+            WHERE first_preference_id = %s
+            OR second_preference_id = %s
+            OR third_preference_id = %s
+        """, [user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+    
+    except Exception as e:
+        # Handle any exceptions (e.g., log the error)
+        return render(request, 'error.html', {'message': 'An error occurred while processing your recommendations.'})
+    
     return render(request, 'top_picks.html', {'movies': movies, 'books': books})
+
 from django.db.models import Q
 
 from django.shortcuts import render, get_object_or_404
@@ -437,32 +708,134 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import User, WatchlistItem, ReadlistItem, CompatibilityScore
 
+def compare_mbti_types(mbti_type_1, mbti_type_2):
+    """
+    Calculate compatibility score between two MBTI types using weighted dimensions.
+
+    Args:
+        mbti_type_1 (str): MBTI type of user 1.
+        mbti_type_2 (str): MBTI type of user 2.
+
+    Returns:
+        float: Compatibility score (0 to 100).
+    """
+    if not mbti_type_1 or not mbti_type_2:
+        return 0.0
+
+    if len(mbti_type_1) != 4 or len(mbti_type_2) != 4:
+        return 0.0
+
+    # Weighting for each dimension
+    weights = [0.25, 0.30, 0.30, 0.15]  # I/E, S/N, T/F, J/P
+
+    # Compatibility scoring
+    compatibility_score = 0
+    for i in range(4):
+        if mbti_type_1[i] == mbti_type_2[i]:
+            compatibility_score += weights[i]  # Fully compatible for this dimension
+        elif (i == 0 and (mbti_type_1[i] in 'IE' and mbti_type_2[i] in 'IE')) or \
+             (i == 3 and (mbti_type_1[i] in 'JP' and mbti_type_2[i] in 'JP')):
+            # Bonus points for complementary opposites in I/E and J/P dimensions
+            compatibility_score += weights[i] * 0.5
+
+    # Normalize to 0-100 scale
+    return compatibility_score * 100
 @login_required
 def other_dashboard(request, user_id):
     selected_user = get_object_or_404(User, user_id=user_id)
 
-    # Calculate the follower and following counts
+    # Ensure compatibility score is calculated or updated
+    user_mbti = getattr(request.user.mbti_type, 'mbti_type', None)
+    selected_user_mbti = getattr(selected_user.mbti_type, 'mbti_type', None)
+
+    if user_mbti and selected_user_mbti:
+        score = compare_mbti_types(user_mbti, selected_user_mbti)
+
+        # Use raw SQL to insert or update compatibility score
+        with connection.cursor() as cursor:
+            # Update or insert the compatibility score (request.user -> selected_user)
+            cursor.execute("""
+                INSERT INTO website_compatibilityscore (user_id, compared_user_id, score)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE score = VALUES(score)
+            """, [request.user.user_id, selected_user.user_id, score])
+
+            # Update or insert the reverse compatibility score (selected_user -> request.user)
+            cursor.execute("""
+                INSERT INTO website_compatibilityscore (user_id, compared_user_id, score)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE score = VALUES(score)
+            """, [selected_user.user_id, request.user.user_id, score])
+
+    # Calculate followers, following, and fetch lists
     followers_count = selected_user.followers.count()
     following_count = selected_user.following.count()
 
-    # Fetching watchlist and readlist items
-    watchlist_movies = WatchlistItem.objects.filter(user=selected_user)
-    readlist_books = ReadlistItem.objects.filter(user=selected_user)
+    with connection.cursor() as cursor:
+        # Watchlist
+        cursor.execute("""
+            SELECT w.movie_id, w.status, m.title
+            FROM website_watchlistitem w
+            JOIN website_movie m ON w.movie_id = m.movie_id
+            WHERE w.user_id = %s
+        """, [selected_user.user_id])
+        watchlist = cursor.fetchall()
 
-    # Calculate compatibility score
-    try:
-        compatibility_score = CompatibilityScore.objects.get(user=request.user, compared_user=selected_user).score
-    except CompatibilityScore.DoesNotExist:
-        compatibility_score = 0  # Fallback value if no score exists
+        # Readlist
+        cursor.execute("""
+            SELECT r.book_id, r.status, b.title
+            FROM website_readlistitem r
+            JOIN website_book b ON r.book_id = b.book_id
+            WHERE r.user_id = %s
+        """, [selected_user.user_id])
+        readlist = cursor.fetchall()
 
-    # Pass context to template
+    # Process lists
+    watchlist_items = [{'movie_id': item[0], 'status': item[1], 'title': item[2]} for item in watchlist]
+    readlist_items = [{'book_id': item[0], 'status': item[1], 'title': item[2]} for item in readlist]
+
+    # Fetch personalized lists for selected_user
+    personalized_lists = PersonalizedList.objects.filter(user=selected_user).prefetch_related('movies', 'books')
+
+
+
+    # Prepare personalized list context
+    personalized_list_data = []
+    for p_list in personalized_lists:
+        movies = [
+            {'title': movie.movie.title, 'rating': movie.rating, 'review': movie.review}
+            for movie in p_list.movies.all()
+        ]
+        books = [
+            {'title': book.book.title, 'rating': book.rating, 'review': book.review}
+            for book in p_list.books.all()
+        ]
+        personalized_list_data.append({
+            'id' : p_list.id,
+            'list_name': p_list.list_name,
+            'created_at': p_list.created_at,
+            'movies': movies,
+            'books': books,
+        })
+
+    # Fetch compatibility score
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT score FROM website_compatibilityscore
+            WHERE user_id = %s AND compared_user_id = %s
+        """, [request.user.user_id, selected_user.user_id])
+        row = cursor.fetchone()
+        compatibility_score = row[0] if row else 0
+
+    # Render the dashboard
     context = {
-        'selected_user': selected_user,
-        'watchlist_movies': watchlist_movies,
-        'readlist_books': readlist_books,
-        'compatibility_score': compatibility_score,
-        'followers_count': followers_count,
-        'following_count': following_count,
+    'selected_user': selected_user,
+    'watchlist': watchlist_items,
+    'readlist': readlist_items,
+    'personalized_lists': personalized_list_data,  # This should match template expectations
+    'compatibility_score': compatibility_score,
+    'followers_count': followers_count,
+    'following_count': following_count,
     }
-
     return render(request, 'other_dashboard.html', context)
+

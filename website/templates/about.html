@@ -53,12 +53,15 @@
 <div class="section text-center">
     <h2 class="section-title">Voices of PersonaPicks</h2>
     {% for feedback in feedbacks %}
-    <div class="testimonial mx-auto">
-        <p class="testimonial-text">"{{ feedback.message|truncatechars:150 }}"</p>
-        <div class="user">- {{ feedback.feedback_giver.username }}</div>
-    </div>
+        <div class="testimonial mx-auto">
+            <p class="testimonial-text">"{{ feedback.message|truncatechars:150 }}"</p>
+            <div class="user">
+                <strong>- {{ feedback.feedback_giver_name }}</strong>
+            </div>
+            <small class="text-muted">{{ feedback.created_at|date:"F j, Y, g:i a" }}</small>
+        </div>
     {% empty %}
-    <p class="no-feedback">No testimonials yet. Be the first to share your thoughts!</p>
+        <p class="no-feedback">No testimonials yet. Be the first to share your thoughts!</p>
     {% endfor %}
 </div>
 
@@ -71,9 +74,9 @@
             name="message" 
             class="form-control" 
             rows="5" 
-            placeholder="Write your feedback here..."
+            placeholder="Write your feedback here..." 
             required></textarea>
-        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+        <button type="submit" class="btn btn-primary mt-3">Submit Feedback</button>
     </form>
 </div>
 
