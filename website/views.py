@@ -117,7 +117,7 @@ def dashboard(request):
         activity_feed = cursor.fetchall()
 
     # Follower and following counts
-    followers_count = user.followers.count()  
+    followers_count = user.followers.count()  # Keeping ORM here for simplicity
     following_count = user.following.count()
 
     # Handle bio form submission
@@ -174,9 +174,8 @@ def dashboard(request):
         'form': form,
         'personalized_lists': personalized_list_data,
     }
+
     return render(request, 'dashboard.html', context)
-
-
 
 @login_required
 def create_list(request):
@@ -559,29 +558,17 @@ from django.db import connection
 from django.contrib import messages
 from django.shortcuts import render, redirect
 
-from django.db import transaction
-from django.db import connection
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .forms import FeedbackForm
-
 def about(request):
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
-            try:
-                # Start a transaction
-                with transaction.atomic():
-                    feedback = form.save(commit=False)
-                    feedback.feedback_giver = request.user  # Set the feedback giver to the logged-in user
-                    feedback.save()  # Save the feedback to the database
-                    messages.success(request, "Thank you for your feedback!")
-                    return redirect('about')  # Refresh the page to show the new feedback
-            except Exception as e:
-                # In case of an error, show a message and rollback the transaction
-                messages.error(request, "There was an error. Please try again.")
+            feedback = form.save(commit=False)
+            feedback.feedback_giver = request.user  # Set the feedback giver to the logged-in user
+            feedback.save()
+            messages.success(request, "Thank you for your feedback!")
+            return redirect('about')  # Refresh the page to show the new feedback
         else:
-            messages.error(request, "There was an error with the form. Please try again.")
+            messages.error(request, "There was an error. Please try again.")
     else:
         form = FeedbackForm()
 
@@ -611,10 +598,7 @@ from django.shortcuts import render
 from django.db import connection
 from django.shortcuts import render
 from django.utils.timezone import now
-from django.db import transaction
-from django.db import connection
-from django.shortcuts import render
-
+@login_required
 def top_picks(request):
     # Ensure the user has an MBTI type assigned
     user_mbti_type_id = request.user.mbti_type_id
@@ -623,52 +607,47 @@ def top_picks(request):
         # Handle the case where the MBTI type is not assigned (optional, could redirect or return an error)
         return render(request, 'error.html', {'message': 'MBTI type not set.'})
     
-    try:
-        # Start a transaction
-        with transaction.atomic():
-            # Execute raw SQL to insert recommendations for movies matching user's preferences
-            with connection.cursor() as cursor:
-                # Insert movie recommendations
-                movie_query = """
-                    INSERT INTO website_recommendation (recommendation_for_user_id, movie_id, recommended_at)
-                    SELECT %s, movie_id, NOW()
-                    FROM website_movie
-                    WHERE first_preference_id = %s
-                       OR second_preference_id = %s
-                       OR third_preference_id = %s;
-                """
-                cursor.execute(movie_query, [request.user.user_id, user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
-                
-                # Insert book recommendations
-                book_query = """
-                    INSERT INTO website_recommendation (recommendation_for_user_id, book_id, recommended_at)
-                    SELECT %s, book_id, NOW()
-                    FROM website_book
-                    WHERE first_preference_id = %s
-                       OR second_preference_id = %s
-                       OR third_preference_id = %s;
-                """
-                cursor.execute(book_query, [request.user.user_id, user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
-        
-        # Get movies that match the user's MBTI preferences
-        movies = Movie.objects.raw("""
-            SELECT * FROM website_movie
-            WHERE first_preference_id = %s
-            OR second_preference_id = %s
-            OR third_preference_id = %s
-        """, [user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
-        
-        # Get books that match the user's MBTI preferences
-        books = Book.objects.raw("""
-            SELECT * FROM website_book
-            WHERE first_preference_id = %s
-            OR second_preference_id = %s
-            OR third_preference_id = %s
-        """, [user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+    # Get the ID of the MBTI type
     
-    except Exception as e:
-        # Handle any exceptions (e.g., log the error)
-        return render(request, 'error.html', {'message': 'An error occurred while processing your recommendations.'})
+    # Execute raw SQL to insert recommendations for movies matching user's preferences
+    with connection.cursor() as cursor:
+        # Insert movie recommendations
+        movie_query = """
+            INSERT INTO website_recommendation (recommendation_for_user_id, movie_id, recommended_at)
+            SELECT %s, movie_id, NOW()
+            FROM website_movie
+            WHERE first_preference_id = %s
+               OR second_preference_id = %s
+               OR third_preference_id = %s;
+        """
+        cursor.execute(movie_query, [request.user.user_id, user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+        
+        # Insert book recommendations
+        book_query = """
+            INSERT INTO website_recommendation (recommendation_for_user_id, book_id, recommended_at)
+            SELECT %s, book_id, NOW()
+            FROM website_book
+            WHERE first_preference_id = %s
+               OR second_preference_id = %s
+               OR third_preference_id = %s;
+        """
+        cursor.execute(book_query, [request.user.user_id, user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+    
+    # Get movies that match the user's MBTI preferences
+    movies = Movie.objects.raw("""
+        SELECT * FROM website_movie
+        WHERE first_preference_id = %s
+        OR second_preference_id = %s
+        OR third_preference_id = %s
+    """, [user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
+    
+    # Get books that match the user's MBTI preferences
+    books = Book.objects.raw("""
+        SELECT * FROM website_book
+        WHERE first_preference_id = %s
+        OR second_preference_id = %s
+        OR third_preference_id = %s
+    """, [user_mbti_type_id, user_mbti_type_id, user_mbti_type_id])
     
     return render(request, 'top_picks.html', {'movies': movies, 'books': books})
 
@@ -798,7 +777,6 @@ def other_dashboard(request, user_id):
     personalized_lists = PersonalizedList.objects.filter(user=selected_user).prefetch_related('movies', 'books')
 
 
-
     # Prepare personalized list context
     personalized_list_data = []
     for p_list in personalized_lists:
@@ -838,4 +816,3 @@ def other_dashboard(request, user_id):
     'following_count': following_count,
     }
     return render(request, 'other_dashboard.html', context)
-

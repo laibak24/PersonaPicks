@@ -211,17 +211,3 @@ class PersonalizedBook(models.Model):
 
     def __str__(self):
         return f"{self.book.title} in {self.personalized_list.list_name}"
-
-class Referral(models.Model):
-    referrer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='referrals_made')
-    referee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='referrals_received')
-    movie = models.ForeignKey(Movie, on_delete=models.SET_NULL, null=True, blank=True)
-    book = models.ForeignKey(Book, on_delete=models.SET_NULL, null=True, blank=True)
-    referred_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        if self.movie:
-            return f"{self.referrer.username} referred {self.movie.title} to {self.referee.username}"
-        elif self.book:
-            return f"{self.referrer.username} referred {self.book.title} to {self.referee.username}"
-        return "Referral"
