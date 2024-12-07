@@ -1,3 +1,4 @@
+-- Insert MBTI Types
 INSERT INTO website_mbtitype (mbti_type_id, mbti_type) VALUES
     (1, 'INTJ'),
     (2, 'INTP'),
@@ -16,8 +17,7 @@ INSERT INTO website_mbtitype (mbti_type_id, mbti_type) VALUES
     (15, 'ESTP'),
     (16, 'ESFP');
 
-
-
+-- Insert Movies
 INSERT INTO website_movie (title, description, release_date, image, first_preference_id, second_preference_id, third_preference_id) VALUES
     ('Inception', 'A mind-bending thriller about dream manipulation.', '2010-07-16', 'movie_images/inception.jpg', 1, 4, 2),
     ('The Shawshank Redemption', 'A story of hope and resilience in prison.', '1994-09-23', 'movie_images/shawshank_redemption.jpg', 5, 10, 9),
@@ -27,16 +27,16 @@ INSERT INTO website_movie (title, description, release_date, image, first_prefer
     ('Interstellar', 'A space exploration mission to save humanity.', '2014-11-07', 'movie_images/interstellar.jpg', 5, 1, 4),
     ('The Godfather', 'A powerful tale of family and crime in America.', '1972-03-24', 'movie_images/the_godfather.jpg', 9, 11, 3),
     ('Pulp Fiction', 'An intertwining story of crime and redemption.', '1994-10-14', 'movie_images/pulp_fiction.jpg', 8, 15, 13),
-    ('Spirited Away', 'A sullen 10-year-old girl wanders into a world ruled by gods, witches and spirits.', '2003-03-28', 'movie_images/spirited_away.jpg', 6, 8, 14),
+    ('Spirited Away', 'A sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits.', '2003-03-28', 'movie_images/spirited_away.jpg', 6, 8, 14),
     ('Parasite', 'Greed and class discrimination threaten the relationship between a family and a clan.', '2019-11-08', 'movie_images/parasite.jpg', 1, 5, 3),
     ('Whiplash', 'A promising young drummer and his struggles.', '2014-10-15', 'movie_images/whiplash.jpg', 4, 7, 12),
     ('The Prestige', 'Rival 19th-century magicians engage in a bitter battle for trade secrets.', '2006-10-20', 'movie_images/the_prestige.jpg', 15, 11, 3),
     ('Casablanca', 'A cafe owner struggles to help his former lover escape the Nazis.', '1943-01-23', 'movie_images/casablanca.jpg', 5, 14, 9),
-    ('American Beauty', 'A father has a mid-life crisis after becoming infatuated with his daughter\'s best friend.', '1999-10-01', 'movie_images/am_beau.jpg', 9, 11, 3),
+    ('American Beauty', 'A father has a mid-life crisis after becoming infatuated with his daughter''s best friend.', '1999-10-01', 'movie_images/am_beau.jpg', 9, 11, 3),
     ('Ikiru', 'A bureaucrat tries to find meaning in his life after he discovers he has terminal cancer.', '1956-03-25', 'movie_images/ikiru.jpg', 10, 16, 13),
     ('Spider-Man: Into the Spider-Verse', 'Teen Miles Morales becomes the Spider-Man of his universe.', '2008-12-14', 'movie_images/itsv.jpg', 3, 2, 11),
     ('The Shining', 'A family heads to an isolated hotel, where a sinister presence influences the father into violence.', '1980-06-13', 'movie_images/shining.jpg', 15, 4, 7),
-    ('Inglourious Basterds', 'A plan to assassinate Nazi leaders by a group of Jewish soldiers coincides with a theatre owner\'s vengeful plans.', '2009-08-21', 'movie_images/basterds.jpg', 1, 12, 4),
+    ('Inglourious Basterds', 'A plan to assassinate Nazi leaders by a group of Jewish soldiers coincides with a theatre owner''s vengeful plans.', '2009-08-21', 'movie_images/basterds.jpg', 1, 12, 4),
     ('UP', '78-year-old Carl Fredricksen travels to South America in his house equipped with balloons.', '2009-07-23', 'movie_images/up.jpg', 5, 6, 10),
     ('Good Will Hunting', 'Will Hunting, a janitor at MIT, has a gift for mathematics.', '1998-01-09', 'movie_images/hunting.jpg', 3, 15, 12),
     ('3 Idiots', 'Two friends are searching for their long lost companion and revisit their college days.', '2009-12-25', 'movie_images/threeidiots.jpg', 11, 4, 8),
