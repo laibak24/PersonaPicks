@@ -1,0 +1,81 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment and dependencies
+venv/
+env/
+Lib/
+site-packages/
+Scripts/
+bin/
+Include/
+share/
+local/
+*.egg-info/
+*.egg
+
+
+# Site-packages and pip installs
+pip-log.txt
+pip-delete-this-directory.txt
+*.whl
+site-packages/
+
+# Environment variables
+*.env
+.env.*
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.out
+*.err
+logs/
+
+# Database
+*.sqlite3
+*.db
+
+# Postgres
+*.sql
+*.psql
+dump.sql
+
+# Static files
+staticfiles/
+static/
+media/
+
+# Migrations
+*/migrations/*.py
+*/migrations/*.pyc
+
+# Node.js
+node_modules/
+
+# Python packaging
+dist/
+build/
+*.pyo
+
+# Test coverage reports
+htmlcov/
+.coverage
+*.cover
+.hypothesis/
+
+# Deployment files
+.vercel/
+output/
+
+# Railway configurations
+railway.json
